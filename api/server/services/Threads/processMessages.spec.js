@@ -980,4 +980,81 @@ These points highlight Harry's initial experiences in the magical world and set 
     expect(result.text).toBe(expectedText);
     expect(result.edited).toBe(true);
   });
+
+  test('replaces FILE_CITATION annotation inside markdown link URL with actual filepath', async () => {
+    const messages = [
+      {
+        content: [
+          {
+            type: 'text',
+            text: {
+              value: '[Download file](^1^)',
+              annotations: [
+                {
+                  type: 'file_citation',
+                  text: '^1^',
+                  start_index: 16,
+                  end_index: 19,
+                  file_citation: { file_id: 'file-XXXXXXXXXXXXXXXXXXXX' },
+                },
+              ],
+            },
+          },
+        ],
+        created_at: 1,
+      },
+    ];
+
+    retrieveAndProcessFile.mockResolvedValue({
+      filename: 'demo_donnees.xlsx',
+      filepath: '/api/files/user123/file-XXXX/demo_donnees.xlsx',
+    });
+
+    const result = await processMessages({
+      openai: {},
+      client: { processedFileIds: new Set() },
+      messages,
+    });
+
+    expect(result.text).toBe(
+      '[Download file](/api/files/user123/file-XXXX/demo_donnees.xlsx)',
+    );
+    expect(result.edited).toBe(true);
+  });
+
+  test('falls back to citation number when FILE_CITATION in link URL has no filepath', async () => {
+    const messages = [
+      {
+        content: [
+          {
+            type: 'text',
+            text: {
+              value: '[Download file](^1^)',
+              annotations: [
+                {
+                  type: 'file_citation',
+                  text: '^1^',
+                  start_index: 16,
+                  end_index: 19,
+                  file_citation: { file_id: 'file-XXXXXXXXXXXXXXXXXXXX' },
+                },
+              ],
+            },
+          },
+        ],
+        created_at: 1,
+      },
+    ];
+
+    retrieveAndProcessFile.mockResolvedValue({ filename: 'demo_donnees.xlsx' });
+
+    const result = await processMessages({
+      openai: {},
+      client: { processedFileIds: new Set() },
+      messages,
+    });
+
+    expect(result.text).toBe('[Download file](^1^)\n\n^1.^ demo_donnees.xlsx');
+    expect(result.edited).toBe(true);
+  });
 });
