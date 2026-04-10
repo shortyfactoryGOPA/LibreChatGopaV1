@@ -604,12 +604,17 @@ async function processMessages({ openai, client, messages = [] }) {
               unknownType: true,
             });
             if (file && file.filename) {
-              if (!sources.has(file.filename)) {
-                sources.set(file.filename, sources.size + 1);
+              const textBefore = currentText.slice(0, annotation.start_index);
+              if (textBefore.endsWith('](') && file.filepath) {
+                replacementText = file.filepath;
+              } else {
+                if (!sources.has(file.filename)) {
+                  sources.set(file.filename, sources.size + 1);
+                }
+                replacementText = `${uniqueCitationStart}${sources.get(
+                  file.filename,
+                )}${uniqueCitationEnd}`;
               }
-              replacementText = `${uniqueCitationStart}${sources.get(
-                file.filename,
-              )}${uniqueCitationEnd}`;
             }
           }
 
