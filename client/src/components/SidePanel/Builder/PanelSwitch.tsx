@@ -1,12 +1,13 @@
 import { useState, useEffect, useMemo } from 'react';
 import { defaultAssistantsVersion } from 'librechat-data-provider';
-import type { Action, TEndpointsConfig, AssistantsEndpoint } from 'librechat-data-provider';
+import type { Action, TEndpointsConfig } from 'librechat-data-provider';
 import type { ActionsEndpoint } from '~/common';
 import {
   useGetActionsQuery,
   useGetEndpointsQuery,
   useGetAssistantDocsQuery,
 } from '~/data-provider';
+import { getAssistantEndpoint } from '~/utils';
 import AssistantPanel from './AssistantPanel';
 import { useChatContext } from '~/Providers';
 import ActionsPanel from './ActionsPanel';
@@ -21,14 +22,20 @@ export default function PanelSwitch() {
   );
 
   const { data: endpointsConfig = {} as TEndpointsConfig } = useGetEndpointsQuery();
-  const { data: actions = [] } = useGetActionsQuery(conversation?.endpoint as ActionsEndpoint);
-  const { data: documentsMap = null } = useGetAssistantDocsQuery(conversation?.endpoint ?? '', {
+
+  const builderEndpoint = useMemo(
+    () => getAssistantEndpoint(conversation?.endpoint, endpointsConfig),
+    [conversation?.endpoint, endpointsConfig],
+  );
+
+  const { data: actions = [] } = useGetActionsQuery(builderEndpoint as ActionsEndpoint);
+  const { data: documentsMap = null } = useGetAssistantDocsQuery(builderEndpoint ?? '', {
     select: (data) => new Map(data.map((dbA) => [dbA.assistant_id, dbA])),
   });
 
   const assistantsConfig = useMemo(
-    () => endpointsConfig?.[conversation?.endpoint ?? ''],
-    [conversation?.endpoint, endpointsConfig],
+    () => endpointsConfig?.[builderEndpoint ?? ''],
+    [builderEndpoint, endpointsConfig],
   );
 
   useEffect(() => {
@@ -38,11 +45,11 @@ export default function PanelSwitch() {
     }
   }, [conversation?.assistant_id]);
 
-  if (!conversation?.endpoint) {
+  if (!builderEndpoint) {
     return null;
   }
 
-  const version = assistantsConfig?.version ?? defaultAssistantsVersion[conversation.endpoint];
+  const version = assistantsConfig?.version ?? defaultAssistantsVersion[builderEndpoint];
 
   if (activePanel === Panel.actions || action) {
     return (
@@ -56,7 +63,7 @@ export default function PanelSwitch() {
         setActivePanel={setActivePanel}
         assistant_id={currentAssistantId}
         setCurrentAssistantId={setCurrentAssistantId}
-        endpoint={conversation.endpoint as AssistantsEndpoint}
+        endpoint={builderEndpoint}
         version={version}
       />
     );
@@ -72,7 +79,7 @@ export default function PanelSwitch() {
         setActivePanel={setActivePanel}
         assistant_id={currentAssistantId}
         setCurrentAssistantId={setCurrentAssistantId}
-        endpoint={conversation.endpoint as AssistantsEndpoint}
+        endpoint={builderEndpoint}
         assistantsConfig={assistantsConfig}
         version={version}
       />

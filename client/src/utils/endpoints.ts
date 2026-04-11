@@ -379,6 +379,36 @@ export function getIconKey({
   return endpointType ? 'unknown' : (endpoint ?? 'unknown');
 }
 
+/**
+ * Returns a safe assistants endpoint for the builder panel.
+ * Falls back to the first available assistants endpoint with builder enabled
+ * when the current conversation endpoint is not an assistants endpoint.
+ */
+export function getAssistantEndpoint(
+  endpoint: string | null | undefined,
+  endpointsConfig: t.TEndpointsConfig,
+): t.AssistantsEndpoint | null {
+  if (isAssistantsEndpoint(endpoint)) {
+    return endpoint as t.AssistantsEndpoint;
+  }
+
+  if (
+    endpointsConfig?.[EModelEndpoint.azureAssistants] &&
+    endpointsConfig[EModelEndpoint.azureAssistants]?.disableBuilder !== true
+  ) {
+    return EModelEndpoint.azureAssistants;
+  }
+
+  if (
+    endpointsConfig?.[EModelEndpoint.assistants] &&
+    endpointsConfig[EModelEndpoint.assistants]?.disableBuilder !== true
+  ) {
+    return EModelEndpoint.assistants;
+  }
+
+  return null;
+}
+
 export const getEntity = ({
   endpoint,
   assistant_id,
