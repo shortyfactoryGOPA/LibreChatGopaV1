@@ -108,7 +108,10 @@ function ImportConversations() {
 
   return (
     <div className="flex items-center justify-between">
-      <Label id="import-conversation-label">{localize('com_ui_import_conversation_info')}</Label>
+      <div className="flex flex-col" id="import-conversation-label">
+        <Label>{localize('com_ui_import_conversation_label')}</Label>
+        <span className="text-xs text-text-secondary">{localize('com_ui_import_conversation_info')}</span>
+      </div>
       <Button
         variant="outline"
         onClick={handleImportClick}

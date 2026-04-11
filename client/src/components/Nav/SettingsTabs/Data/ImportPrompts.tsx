@@ -87,7 +87,10 @@ function ImportPrompts() {
 
   return (
     <div className="flex items-center justify-between">
-      <Label id="import-prompts-label">{localize('com_ui_import_prompts_info')}</Label>
+      <div className="flex flex-col" id="import-prompts-label">
+        <Label>{localize('com_ui_import_prompts_label')}</Label>
+        <span className="text-xs text-text-secondary">{localize('com_ui_import_prompts_info')}</span>
+      </div>
       <Button
         variant="outline"
         onClick={() => fileInputRef.current?.click()}
