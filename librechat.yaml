@@ -80,9 +80,9 @@ interface:
 
       By using the Website, you acknowledge that you have read these Terms of Service and agree to be bound by them.
 
-  modelSelect: true
+  modelSelect: false
   parameters: true
-  presets: true
+  presets: false
   prompts:
     use: true
     create: true
