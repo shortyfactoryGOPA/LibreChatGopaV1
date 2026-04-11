@@ -37,7 +37,10 @@ export const RevokeKeys = ({
 
   return (
     <div className="flex items-center justify-between">
-      <Label id="revoke-info-label">{localize('com_ui_revoke_info')}</Label>
+      <div className="flex flex-col" id="revoke-info-label">
+        <Label>{localize('com_ui_revoke_label')}</Label>
+        <span className="text-xs text-text-secondary">{localize('com_ui_revoke_info')}</span>
+      </div>
 
       <OGDialog open={open} onOpenChange={setOpen}>
         <OGDialogTrigger asChild>
