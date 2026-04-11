@@ -1,8 +1,9 @@
 import { useState, useRef, useCallback } from 'react';
 import { Import } from 'lucide-react';
-import { dataService, QueryKeys, EModelEndpoint, PermissionBits } from 'librechat-data-provider';
 import { useQueryClient } from '@tanstack/react-query';
 import { Spinner, useToastContext, Label, Button } from '@librechat/client';
+import { dataService, QueryKeys, EModelEndpoint, PermissionBits } from 'librechat-data-provider';
+import type { AgentModelParameters } from 'librechat-data-provider';
 import { NotificationSeverity } from '~/common';
 import { useLocalize } from '~/hooks';
 import { cn, logger } from '~/utils';
@@ -57,11 +58,17 @@ function ImportAgents() {
             await dataService.createAgent({
               name: item.name as string,
               instructions: (item.prompt as string) ?? null,
-              model: null,
+              model: (item.model?.id as string) ?? 'gpt-4o',
               provider: EModelEndpoint.azureOpenAI,
               model_parameters: {
                 temperature: typeof item.temperature === 'number' ? item.temperature : 0.7,
-              },
+                maxContextTokens: null,
+                max_context_tokens: null,
+                max_output_tokens: null,
+                top_p: null,
+                frequency_penalty: null,
+                presence_penalty: null,
+              } as AgentModelParameters,
             });
             existingNames.add((item.name as string).toLowerCase());
             created++;
@@ -70,7 +77,7 @@ function ImportAgents() {
           }
         }
 
-        queryClient.invalidateQueries([QueryKeys.agents]);
+        await queryClient.refetchQueries([QueryKeys.agents]);
 
         showToast({
           message: localize('com_ui_import_agents_success', {
