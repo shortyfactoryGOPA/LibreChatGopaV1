@@ -497,6 +497,9 @@ export const anthropicSettings = {
   web_search: {
     default: false as const,
   },
+  code_interpreter: {
+    default: false as const,
+  },
 };
 
 export const agentsSettings = {
@@ -774,6 +777,8 @@ export const tConversationSchema = z.object({
   effort: eAnthropicEffortSchema.optional().nullable(),
   /* OpenAI Responses API / Anthropic API / Google API */
   web_search: z.boolean().optional(),
+  /* OpenAI Responses API — native code interpreter */
+  code_interpreter: z.boolean().optional(),
   /* disable streaming */
   disableStreaming: z.boolean().optional(),
   /* assistant */
