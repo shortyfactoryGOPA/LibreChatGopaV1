@@ -150,6 +150,7 @@ export function getOpenAILLMConfig({
     reasoning_summary,
     verbosity,
     web_search,
+    code_interpreter,
     frequency_penalty,
     presence_penalty,
     ...modelOptions
@@ -179,6 +180,7 @@ export function getOpenAILLMConfig({
   }
 
   let enableWebSearch = web_search;
+  let enableCodeInterpreter = code_interpreter;
 
   /** Apply defaultParams first - only if fields are undefined */
   if (defaultParams && typeof defaultParams === 'object') {
@@ -187,6 +189,14 @@ export function getOpenAILLMConfig({
       if (key === 'web_search') {
         if (enableWebSearch === undefined && typeof value === 'boolean') {
           enableWebSearch = value;
+        }
+        continue;
+      }
+
+      /** Handle code_interpreter separately - don't add to config */
+      if (key === 'code_interpreter') {
+        if (enableCodeInterpreter === undefined && typeof value === 'boolean') {
+          enableCodeInterpreter = value;
         }
         continue;
       }
@@ -210,6 +220,13 @@ export function getOpenAILLMConfig({
       if (key === 'web_search') {
         if (typeof value === 'boolean') {
           enableWebSearch = value;
+        }
+        continue;
+      }
+      /** Handle code_interpreter directly here instead of adding to modelKwargs or llmConfig */
+      if (key === 'code_interpreter') {
+        if (typeof value === 'boolean') {
+          enableCodeInterpreter = value;
         }
         continue;
       }
@@ -272,6 +289,17 @@ export function getOpenAILLMConfig({
     /** Standard OpenAI web search uses tools API */
     llmConfig.useResponsesApi = true;
     tools.push({ type: 'web_search' });
+  }
+
+  /** Check if code_interpreter should be disabled via dropParams */
+  if (dropParams && dropParams.includes('code_interpreter')) {
+    enableCodeInterpreter = false;
+  }
+
+  if (enableCodeInterpreter) {
+    /** Native Azure/OpenAI code interpreter via Responses API */
+    llmConfig.useResponsesApi = true;
+    tools.push({ type: 'code_interpreter', container: { type: 'auto' } });
   }
 
   /**
