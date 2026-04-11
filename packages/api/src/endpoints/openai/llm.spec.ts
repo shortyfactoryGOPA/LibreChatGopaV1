@@ -415,6 +415,78 @@ describe('getOpenAILLMConfig', () => {
     });
   });
 
+  describe('Code Interpreter Functionality', () => {
+    it('should enable native code interpreter with Responses API', () => {
+      const result = getOpenAILLMConfig({
+        apiKey: 'test-api-key',
+        streaming: true,
+        modelOptions: {
+          model: 'gpt-5.2',
+          code_interpreter: true,
+        },
+      });
+
+      expect(result.llmConfig).toHaveProperty('useResponsesApi', true);
+      expect(result.tools).toContainEqual({
+        type: 'code_interpreter',
+        container: { type: 'auto' },
+      });
+    });
+
+    it('should combine code interpreter and web search as separate tools', () => {
+      const result = getOpenAILLMConfig({
+        apiKey: 'test-api-key',
+        streaming: true,
+        modelOptions: {
+          model: 'gpt-5.2',
+          code_interpreter: true,
+          web_search: true,
+        },
+      });
+
+      expect(result.llmConfig).toHaveProperty('useResponsesApi', true);
+      expect(result.tools).toContainEqual({ type: 'web_search' });
+      expect(result.tools).toContainEqual({
+        type: 'code_interpreter',
+        container: { type: 'auto' },
+      });
+    });
+
+    it('should disable code interpreter via dropParams', () => {
+      const result = getOpenAILLMConfig({
+        apiKey: 'test-api-key',
+        streaming: true,
+        modelOptions: {
+          model: 'gpt-5.2',
+          code_interpreter: true,
+        },
+        dropParams: ['code_interpreter'],
+      });
+
+      expect(result.tools).not.toContainEqual({
+        type: 'code_interpreter',
+        container: { type: 'auto' },
+      });
+    });
+
+    it('should not add code interpreter tool when code_interpreter is false', () => {
+      const result = getOpenAILLMConfig({
+        apiKey: 'test-api-key',
+        streaming: true,
+        modelOptions: {
+          model: 'gpt-5.2',
+          code_interpreter: false,
+        },
+      });
+
+      expect(result.tools).not.toContainEqual({
+        type: 'code_interpreter',
+        container: { type: 'auto' },
+      });
+      expect(result.llmConfig).not.toHaveProperty('useResponsesApi', true);
+    });
+  });
+
   describe('GPT-5 max_tokens Handling', () => {
     it('should convert maxTokens to max_completion_tokens for GPT-5 models', () => {
       const result = getOpenAILLMConfig({
