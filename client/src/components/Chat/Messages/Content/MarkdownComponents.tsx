@@ -1,12 +1,13 @@
 import React, { memo, useMemo, useRef, useEffect } from 'react';
 import { useRecoilValue } from 'recoil';
 import { useToastContext } from '@librechat/client';
-import { PermissionTypes, Permissions, apiBaseUrl } from 'librechat-data-provider';
+import { FileSources, PermissionTypes, Permissions, apiBaseUrl } from 'librechat-data-provider';
+import type { TFile } from 'librechat-data-provider';
 import Mermaid, { MermaidErrorBoundary } from '~/components/Messages/Content/Mermaid';
 import CodeBlock from '~/components/Messages/Content/CodeBlock';
 import useHasAccess from '~/hooks/Roles/useHasAccess';
 import { useFileDownload } from '~/data-provider';
-import { useCodeBlockContext } from '~/Providers';
+import { useCodeBlockContext, useMessageContext } from '~/Providers';
 import { handleDoubleClick } from '~/utils';
 import { useLocalize } from '~/hooks';
 import store from '~/store';
@@ -99,28 +100,72 @@ export const a: React.ElementType = memo(function MarkdownAnchor({ href, childre
   const user = useRecoilValue(store.user);
   const { showToast } = useToastContext();
   const localize = useLocalize();
+  const { messageId } = useMessageContext();
+  const messageAttachmentsMap = useRecoilValue(store.messageAttachmentsMap);
+  const messageAttachments = messageAttachmentsMap[messageId] ?? [];
 
   const {
     file_id = '',
     filename = '',
     filepath,
+    isDownloadUrl = false,
   } = useMemo(() => {
-    const pattern = new RegExp(`(?:files|outputs)/${user?.id}/([^\\s]+)`);
-    const match = href.match(pattern);
-    if (match && match[0]) {
-      const path = match[0];
+    // Normalize: strip absolute localhost origin to get just the path
+    let normalizedHref = href ?? '';
+    try {
+      const url = new URL(href);
+      if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
+        normalizedHref = url.pathname + url.search + url.hash;
+      }
+    } catch {
+      // href is relative or non-parseable — use as-is
+    }
+
+    // Pattern 1: /api/files/download/{userId}/{file_id} (azure_responses and similar)
+    const downloadPattern = new RegExp(`files/download/${user?.id}/([^/\\s]+)`);
+    const downloadMatch = normalizedHref.match(downloadPattern);
+    if (downloadMatch) {
+      return { file_id: downloadMatch[1], filename: '', filepath: normalizedHref, isDownloadUrl: true };
+    }
+
+    // Pattern 2: files/{userId}/{file_id}/{filename} or outputs/{userId}/{file_id}/{filename}
+    const uploadPattern = new RegExp(`(?:files|outputs)/${user?.id}/([^\\s]+)`);
+    const uploadMatch = normalizedHref.match(uploadPattern);
+    if (uploadMatch?.[0]) {
+      const path = uploadMatch[0];
       const parts = path.split('/');
       const name = parts.pop();
       const file_id = parts.pop();
-      return { file_id, filename: name, filepath: path };
+      return { file_id, filename: name, filepath: path, isDownloadUrl: false };
     }
-    return { file_id: '', filename: '', filepath: '' };
-  }, [user?.id, href]);
+
+    // Pattern 3: empty href or sandbox: URL (Azure code_interpreter file reference)
+    // Resolve via the message's azure_responses attachment
+    if (!normalizedHref || normalizedHref.startsWith('sandbox:')) {
+      const azureFile = messageAttachments.find(
+        (a): a is TFile =>
+          'source' in a &&
+          (a as TFile).source === FileSources.azure_responses &&
+          !!(a as TFile).file_id &&
+          !!(a as TFile).filepath,
+      );
+      if (azureFile) {
+        return {
+          file_id: azureFile.file_id,
+          filename: azureFile.filename ?? '',
+          filepath: azureFile.filepath,
+          isDownloadUrl: true,
+        };
+      }
+    }
+
+    return { file_id: '', filename: '', filepath: '', isDownloadUrl: false };
+  }, [user?.id, href, messageAttachments]);
 
   const { refetch: downloadFile } = useFileDownload(user?.id ?? '', file_id);
   const props: { target?: string; onClick?: React.MouseEventHandler } = { target: '_blank' };
 
-  if (!file_id || !filename) {
+  if (!file_id) {
     return (
       <a href={href} {...props}>
         {children}
@@ -142,7 +187,7 @@ export const a: React.ElementType = memo(function MarkdownAnchor({ href, childre
       }
       const link = document.createElement('a');
       link.href = stream.data;
-      link.setAttribute('download', filename);
+      link.setAttribute('download', filename || 'download');
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -153,19 +198,18 @@ export const a: React.ElementType = memo(function MarkdownAnchor({ href, childre
   };
 
   props.onClick = handleDownload;
-  props.target = '_blank';
+  delete props.target;
 
+  // Keep download URLs as relative paths — works on both port 3080 and 3090 via proxy
   const domainServerBaseUrl = `${apiBaseUrl()}/api`;
+  const resolvedHref = isDownloadUrl
+    ? (filepath ?? '')
+    : filepath?.startsWith('files/')
+      ? `${domainServerBaseUrl}/${filepath}`
+      : `${domainServerBaseUrl}/files/${filepath}`;
 
   return (
-    <a
-      href={
-        filepath?.startsWith('files/')
-          ? `${domainServerBaseUrl}/${filepath}`
-          : `${domainServerBaseUrl}/files/${filepath}`
-      }
-      {...props}
-    >
+    <a href={resolvedHref} {...props}>
       {children}
     </a>
   );
