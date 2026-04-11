@@ -405,6 +405,7 @@ endpoints:
   #     # Trace output is logged to application log files for compliance auditing
   #     trace: "enabled"
 modelSpecs:
+  enforce: true
   list:
     - name: "azure-gpt-5-2"
       label: "GPT-5.2"
