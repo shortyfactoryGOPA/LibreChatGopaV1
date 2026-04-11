@@ -89,12 +89,21 @@ export function ModelSelectorProvider({ children, startupConfig }: ModelSelector
     },
   );
 
-  const { mappedEndpoints, endpointRequiresUserKey } = useEndpoints({
+  const { mappedEndpoints: rawMappedEndpoints, endpointRequiresUserKey } = useEndpoints({
     agents,
     assistantsMap,
     startupConfig,
     endpointsConfig,
   });
+
+  const mappedEndpoints = useMemo(() => {
+    if (startupConfig?.modelSpecs?.enforce !== true || modelSpecs.length === 0) {
+      return rawMappedEndpoints;
+    }
+    return rawMappedEndpoints.filter(
+      (ep) => isAgentsEndpoint(ep.value) || isAssistantsEndpoint(ep.value),
+    );
+  }, [startupConfig, modelSpecs, rawMappedEndpoints]);
 
   const getModelDisplayName = useCallback(
     (endpoint: Endpoint, model: string): string => {
