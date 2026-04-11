@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { Import } from 'lucide-react';
-import { dataService, QueryKeys, EModelEndpoint } from 'librechat-data-provider';
+import { dataService, QueryKeys, EModelEndpoint, PermissionBits } from 'librechat-data-provider';
 import { useQueryClient } from '@tanstack/react-query';
 import { Spinner, useToastContext, Label, Button } from '@librechat/client';
 import { NotificationSeverity } from '~/common';
@@ -35,7 +35,7 @@ function ImportAgents() {
           return;
         }
 
-        const existingAgents = await dataService.listAgents({});
+        const existingAgents = await dataService.listAgents({ requiredPermission: PermissionBits.VIEW });
         const existingNames = new Set(
           existingAgents.data.map((a) => (a.name ?? '').toLowerCase()),
         );
@@ -57,7 +57,7 @@ function ImportAgents() {
             await dataService.createAgent({
               name: item.name as string,
               instructions: (item.prompt as string) ?? null,
-              model: (item.model?.id as string) ?? null,
+              model: null,
               provider: EModelEndpoint.azureOpenAI,
               model_parameters: {
                 temperature: typeof item.temperature === 'number' ? item.temperature : 0.7,
