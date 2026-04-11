@@ -21,8 +21,9 @@ export const DisableTwoFactorToggle: React.FC<DisableTwoFactorToggleProps> = ({
 
   return (
     <div className="flex items-center justify-between">
-      <div className="flex items-center space-x-2">
-        <Label> {localize('com_nav_2fa')}</Label>
+      <div className="flex flex-col">
+        <Label>{localize('com_nav_2fa_label')}</Label>
+        <span className="text-xs text-text-secondary">{localize('com_nav_2fa')}</span>
       </div>
       <div className="flex items-center gap-3">
         <Button
