@@ -14,7 +14,6 @@ import {
   PermissionTypes,
   isParamEndpoint,
   isAgentsEndpoint,
-  isAssistantsEndpoint,
 } from 'librechat-data-provider';
 import type { TInterfaceConfig, TEndpointsConfig } from 'librechat-data-provider';
 import type { NavLink } from '~/common';
@@ -98,12 +97,9 @@ export default function useSideNavLinks({
     }
 
     if (
-      isAssistantsEndpoint(endpoint) &&
-      ((endpoint === EModelEndpoint.assistants &&
-        endpointsConfig?.[EModelEndpoint.assistants] &&
+      ((endpointsConfig?.[EModelEndpoint.assistants] &&
         endpointsConfig[EModelEndpoint.assistants].disableBuilder !== true) ||
-        (endpoint === EModelEndpoint.azureAssistants &&
-          endpointsConfig?.[EModelEndpoint.azureAssistants] &&
+        (endpointsConfig?.[EModelEndpoint.azureAssistants] &&
           endpointsConfig[EModelEndpoint.azureAssistants].disableBuilder !== true)) &&
       keyProvided
     ) {
