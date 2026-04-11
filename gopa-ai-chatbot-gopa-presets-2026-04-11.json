@@ -1,0 +1,31 @@
+{
+  "presets": [
+    {
+      "contextLength": 1000000,
+      "description": "",
+      "embeddingsProvider": "openai",
+      "includeProfileContext": true,
+      "includeWorkspaceInstructions": true,
+      "model": {
+        "id": "gpt-5"
+      },
+      "name": "azdaz",
+      "prompt": "You are a friendly, helpful AI assistant.",
+      "temperature": 0.5
+    },
+    {
+      "contextLength": 1000000,
+      "description": "",
+      "embeddingsProvider": "openai",
+      "includeProfileContext": true,
+      "includeWorkspaceInstructions": true,
+      "model": {
+        "id": "gpt-5"
+      },
+      "name": "ddddddddd",
+      "prompt": "You are a friendly, helpful AI assistant.",
+      "temperature": 0.5
+    }
+  ],
+  "version": 1
+}
