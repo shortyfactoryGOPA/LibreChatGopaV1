@@ -24,53 +24,49 @@ async function loadDefaultModels(req) {
 
     const isEnabled = (ep) => !!endpoints[ep];
 
-    const [openAI, anthropic, azureOpenAI, assistants, azureAssistants, google, bedrock] =
-      await Promise.all([
-        isEnabled(EModelEndpoint.openAI)
-          ? getOpenAIModels({ user: req.user.id }).catch((error) => {
-              logger.error('Error fetching OpenAI models:', error);
+    const [openAI, anthropic, azureOpenAI, assistants, google, bedrock] = await Promise.all([
+      isEnabled(EModelEndpoint.openAI)
+        ? getOpenAIModels({ user: req.user.id }).catch((error) => {
+            logger.error('Error fetching OpenAI models:', error);
+            return [];
+          })
+        : Promise.resolve([]),
+      isEnabled(EModelEndpoint.anthropic)
+        ? getAnthropicModels({ user: req.user.id, vertexModels: vertexConfig?.modelNames }).catch(
+            (error) => {
+              logger.error('Error fetching Anthropic models:', error);
               return [];
-            })
-          : Promise.resolve([]),
-        isEnabled(EModelEndpoint.anthropic)
-          ? getAnthropicModels({ user: req.user.id, vertexModels: vertexConfig?.modelNames }).catch(
-              (error) => {
-                logger.error('Error fetching Anthropic models:', error);
-                return [];
-              },
-            )
-          : Promise.resolve([]),
-        isEnabled(EModelEndpoint.azureOpenAI)
-          ? getOpenAIModels({ user: req.user.id, azure: true }).catch((error) => {
-              logger.error('Error fetching Azure OpenAI models:', error);
-              return [];
-            })
-          : Promise.resolve([]),
-        isEnabled(EModelEndpoint.assistants)
-          ? getOpenAIModels({ assistants: true }).catch((error) => {
-              logger.error('Error fetching OpenAI Assistants API models:', error);
-              return [];
-            })
-          : Promise.resolve([]),
-        isEnabled(EModelEndpoint.azureAssistants)
-          ? getOpenAIModels({ azureAssistants: true }).catch((error) => {
-              logger.error('Error fetching Azure OpenAI Assistants API models:', error);
-              return [];
-            })
-          : Promise.resolve([]),
-        isEnabled(EModelEndpoint.google)
-          ? Promise.resolve(getGoogleModels()).catch((error) => {
-              logger.error('Error getting Google models:', error);
-              return [];
-            })
-          : Promise.resolve([]),
-        isEnabled(EModelEndpoint.bedrock)
-          ? Promise.resolve(getBedrockModels()).catch((error) => {
-              logger.error('Error getting Bedrock models:', error);
-              return [];
-            })
-          : Promise.resolve([]),
-      ]);
+            },
+          )
+        : Promise.resolve([]),
+      isEnabled(EModelEndpoint.azureOpenAI)
+        ? getOpenAIModels({ user: req.user.id, azure: true }).catch((error) => {
+            logger.error('Error fetching Azure OpenAI models:', error);
+            return [];
+          })
+        : Promise.resolve([]),
+      isEnabled(EModelEndpoint.assistants)
+        ? getOpenAIModels({ assistants: true }).catch((error) => {
+            logger.error('Error fetching OpenAI Assistants API models:', error);
+            return [];
+          })
+        : Promise.resolve([]),
+      isEnabled(EModelEndpoint.google)
+        ? Promise.resolve(getGoogleModels()).catch((error) => {
+            logger.error('Error getting Google models:', error);
+            return [];
+          })
+        : Promise.resolve([]),
+      isEnabled(EModelEndpoint.bedrock)
+        ? Promise.resolve(getBedrockModels()).catch((error) => {
+            logger.error('Error getting Bedrock models:', error);
+            return [];
+          })
+        : Promise.resolve([]),
+    ]);
+
+    // azureAssistants shares the same model pool as azureOpenAI — no separate API call needed
+    const azureAssistants = isEnabled(EModelEndpoint.azureAssistants) ? azureOpenAI : [];
 
     return {
       [EModelEndpoint.openAI]: openAI,
