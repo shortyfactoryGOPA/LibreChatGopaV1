@@ -1,6 +1,6 @@
 const { nanoid } = require('nanoid');
 const { logger } = require('@librechat/data-schemas');
-const { Tools, StepTypes, FileContext, ErrorTypes } = require('librechat-data-provider');
+const { Tools, StepTypes, FileContext, FileSources, ErrorTypes } = require('librechat-data-provider');
 const {
   EnvVar,
   Constants,
@@ -10,6 +10,7 @@ const {
 } = require('@librechat/agents');
 const {
   sendEvent,
+  getBasePath,
   GenerationJobManager,
   writeAttachmentEvent,
   createToolExecuteHandler,
@@ -18,16 +19,254 @@ const { processFileCitations } = require('~/server/services/Files/Citations');
 const { processCodeOutput } = require('~/server/services/Files/Code/process');
 const { loadAuthValues } = require('~/server/services/Tools/credentials');
 const { saveBase64Image } = require('~/server/services/Files/process');
+const { createFile } = require('~/models');
+
+const MIME_TO_EXT = {
+  'text/csv': 'csv',
+  'text/plain': 'txt',
+  'text/html': 'html',
+  'text/markdown': 'md',
+  'application/json': 'json',
+  'application/xml': 'xml',
+  'application/pdf': 'pdf',
+  'application/zip': 'zip',
+  'image/png': 'png',
+  'image/jpeg': 'jpg',
+  'image/gif': 'gif',
+  'image/svg+xml': 'svg',
+  'application/vnd.ms-excel': 'xls',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
+  'application/vnd.ms-powerpoint': 'ppt',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'pptx',
+  'application/msword': 'doc',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+};
+
+const EXT_TO_MIME = Object.fromEntries(Object.entries(MIME_TO_EXT).map(([k, v]) => [v, k]));
+
+/**
+ * Resolves the Azure OpenAI v1 base URL and API key from environment variables.
+ * Supports both explicit AZURE_OPENAI_BASEURL and instance-name-based construction.
+ * @returns {{ apiKey: string, baseURL: string } | null}
+ */
+function resolveAzureCredentials() {
+  const apiKey = process.env.AZURE_OPENAI_API_KEY || process.env.AZURE_API_KEY || '';
+  let baseURL = (process.env.AZURE_OPENAI_BASEURL || '').replace(/\/deployments(?:\/.*)?$/, '/v1');
+  if (!baseURL) {
+    const instanceName = process.env.AZURE_OPENAI_INSTANCE_NAME || '';
+    if (instanceName) {
+      baseURL = `https://${instanceName}.openai.azure.com/openai/v1`;
+    }
+  }
+  if (!apiKey || !baseURL) {
+    return null;
+  }
+  return { apiKey, baseURL };
+}
+
+/**
+ * Lists files in an Azure Responses API container.
+ * @param {string} container_id
+ * @returns {Promise<Array<{id: string, path?: string, filename?: string}>>}
+ */
+async function fetchAzureContainerFiles(container_id) {
+  const credentials = resolveAzureCredentials();
+  if (!credentials) {
+    logger.warn('[fetchAzureContainerFiles] Missing Azure credentials (AZURE_OPENAI_API_KEY / AZURE_OPENAI_INSTANCE_NAME)');
+    return [];
+  }
+  const { apiKey, baseURL } = credentials;
+  try {
+    const url = `${baseURL}/containers/${container_id}/files?api-version=preview`;
+    const response = await fetch(url, { headers: { 'api-key': apiKey } });
+    if (!response.ok) {
+      logger.warn(`[fetchAzureContainerFiles] Azure returned ${response.status} for container ${container_id}`);
+      return [];
+    }
+    const json = await response.json();
+    return json?.data ?? [];
+  } catch (error) {
+    logger.error('[fetchAzureContainerFiles] Error listing container files:', error);
+    return [];
+  }
+}
+
+/**
+ * Processes native Azure Responses API code_interpreter file outputs.
+ * Creates DB file records and emits attachment events for each generated file.
+ * @param {Object} params
+ * @param {ServerRequest} params.req
+ * @param {ServerResponse} params.res
+ * @param {string | null} params.streamId
+ * @param {ArtifactPromises} params.artifactPromises
+ * @param {Object} params.toolOutput - A code_interpreter_call tool output object
+ * @param {Record<string, unknown>} params.metadata - Graph event metadata
+ */
+async function processNativeCodeInterpreterOutputs({
+  req,
+  res,
+  streamId,
+  artifactPromises,
+  toolOutput,
+  metadata,
+}) {
+  const { container_id, outputs, id: toolCallId } = toolOutput;
+  if (!container_id || !outputs) {
+    return;
+  }
+
+  const userId = req.user.id;
+  const basePath = getBasePath();
+  const messageId = metadata.run_id;
+  const conversationId = metadata.thread_id;
+
+  for (const output of outputs) {
+    if (output.type !== 'files' || !output.files) {
+      continue;
+    }
+    for (const fileInfo of output.files) {
+      const { file_id, mime_type } = fileInfo;
+      if (!file_id) {
+        continue;
+      }
+      artifactPromises.push(
+        (async () => {
+          const ext = MIME_TO_EXT[mime_type] || '';
+          const filename = ext ? `${file_id}.${ext}` : file_id;
+          const filepath = `${basePath}/api/files/download/${userId}/${file_id}`;
+
+          const fileRecord = {
+            file_id,
+            filename,
+            filepath,
+            object: 'file',
+            type: mime_type || 'application/octet-stream',
+            source: FileSources.azure_responses,
+            context: FileContext.execute_code,
+            bytes: 0,
+            usage: 1,
+            user: userId,
+            conversationId,
+            messageId,
+            metadata: { container_id },
+          };
+
+          await createFile(fileRecord, true);
+
+          const attachment = {
+            ...fileRecord,
+            messageId,
+            toolCallId,
+            conversationId,
+          };
+
+          writeAttachment(res, streamId, attachment);
+          return fileRecord;
+        })().catch((error) => {
+          logger.error('[processNativeCodeInterpreterOutputs] Error saving file:', error);
+          return null;
+        }),
+      );
+    }
+  }
+}
+
+/**
+ * Extracts filenames referenced via `sandbox:` paths in the model's response text.
+ * @param {unknown} textContent - The output content array from the AIMessage
+ * @returns {Set<string>} Set of filenames (e.g. "report.xlsx")
+ */
+function extractSandboxFilenames(textContent) {
+  const filenames = new Set();
+  if (!Array.isArray(textContent)) {
+    return filenames;
+  }
+  for (const part of textContent) {
+    const text = part?.text ?? '';
+    for (const match of text.matchAll(/sandbox:\/[^\)\s"']+/g)) {
+      const filename = match[0].split('/').pop();
+      if (filename) {
+        filenames.add(filename);
+      }
+    }
+  }
+  return filenames;
+}
+
+/**
+ * Fallback handler for Azure code_interpreter calls where `outputs` is empty but the model
+ * references a file via a `sandbox:` path in its response text.
+ * Lists the container's files, matches by filename, and emits SSE attachment events.
+ * @param {Object} params
+ * @param {ServerRequest} params.req
+ * @param {ServerResponse} params.res
+ * @param {string | null} params.streamId
+ * @param {ArtifactPromises} params.artifactPromises
+ * @param {Object} params.toolOutput - The code_interpreter_call tool output (with container_id)
+ * @param {Record<string, unknown>} params.metadata - Graph event metadata
+ * @param {unknown} params.textContent - The AIMessage output content array
+ */
+async function processCodeInterpreterSandboxFiles({
+  req,
+  res,
+  streamId,
+  artifactPromises,
+  toolOutput,
+  metadata,
+  textContent,
+}) {
+  const { container_id } = toolOutput;
+  const sandboxFilenames = extractSandboxFilenames(textContent);
+  if (sandboxFilenames.size === 0) {
+    return;
+  }
+
+  const containerFiles = await fetchAzureContainerFiles(container_id);
+  if (containerFiles.length === 0) {
+    return;
+  }
+
+  const matchedFiles = containerFiles
+    .filter((f) => {
+      const path = f.path ?? f.filename ?? f.name ?? String(f.id ?? '');
+      const fname = path.split('/').pop() ?? '';
+      return sandboxFilenames.has(fname);
+    })
+    .map((f) => {
+      const path = f.path ?? f.filename ?? f.name ?? '';
+      const ext = path.split('.').pop()?.toLowerCase() ?? '';
+      return { file_id: f.id, mime_type: EXT_TO_MIME[ext] ?? 'application/octet-stream' };
+    })
+    .filter((f) => f.file_id);
+
+  if (matchedFiles.length === 0) {
+    return;
+  }
+
+  await processNativeCodeInterpreterOutputs({
+    req,
+    res,
+    streamId,
+    artifactPromises,
+    metadata,
+    toolOutput: {
+      ...toolOutput,
+      outputs: [{ type: 'files', files: matchedFiles }],
+    },
+  });
+}
 
 class ModelEndHandler {
   /**
    * @param {Array<UsageMetadata>} collectedUsage
+   * @param {{ req: ServerRequest, res: ServerResponse, artifactPromises: ArtifactPromises, streamId: string | null } | null} [nativeToolOptions]
    */
-  constructor(collectedUsage) {
+  constructor(collectedUsage, nativeToolOptions = null) {
     if (!Array.isArray(collectedUsage)) {
       throw new Error('collectedUsage must be an array');
     }
     this.collectedUsage = collectedUsage;
+    this.nativeToolOptions = nativeToolOptions;
   }
 
   finalize(errorMessage) {
@@ -66,6 +305,30 @@ class ModelEndHandler {
           messageId: metadata.run_id,
           conversationId: metadata.thread_id,
         });
+      }
+
+      const toolOutputs = data?.output?.additional_kwargs?.tool_outputs;
+      if (toolOutputs?.length && this.nativeToolOptions) {
+        const textContent = data?.output?.content;
+        for (const toolOutput of toolOutputs) {
+          if (toolOutput.type !== 'code_interpreter_call') {
+            continue;
+          }
+          if (toolOutput.outputs?.length) {
+            await processNativeCodeInterpreterOutputs({
+              ...this.nativeToolOptions,
+              toolOutput,
+              metadata,
+            });
+          } else if (toolOutput.container_id) {
+            await processCodeInterpreterSandboxFiles({
+              ...this.nativeToolOptions,
+              toolOutput,
+              metadata,
+              textContent,
+            });
+          }
+        }
       }
 
       const usage = data?.output?.usage_metadata;
@@ -125,20 +388,24 @@ async function emitEvent(res, streamId, eventData) {
 /**
  * Get default handlers for stream events.
  * @param {Object} options - The options object.
+ * @param {ServerRequest} [options.req] - The server request object (required for native tool processing).
  * @param {ServerResponse} options.res - The server response object.
  * @param {ContentAggregator} options.aggregateContent - Content aggregator function.
  * @param {ToolEndCallback} options.toolEndCallback - Callback to use when tool ends.
  * @param {Array<UsageMetadata>} options.collectedUsage - The list of collected usage metadata.
+ * @param {ArtifactPromises} [options.artifactPromises] - Artifact promises array for native tool outputs.
  * @param {string | null} [options.streamId] - The stream ID for resumable mode, or null for standard mode.
  * @param {ToolExecuteOptions} [options.toolExecuteOptions] - Options for event-driven tool execution.
  * @returns {Record<string, t.EventHandler>} The default handlers.
  * @throws {Error} If the request is not found.
  */
 function getDefaultHandlers({
+  req,
   res,
   aggregateContent,
   toolEndCallback,
   collectedUsage,
+  artifactPromises = null,
   streamId = null,
   toolExecuteOptions = null,
   summarizationOptions = null,
@@ -148,8 +415,10 @@ function getDefaultHandlers({
       `[getDefaultHandlers] Missing required options: res: ${!res}, aggregateContent: ${!aggregateContent}`,
     );
   }
+  const nativeToolOptions =
+    req && artifactPromises ? { req, res, artifactPromises, streamId } : null;
   const handlers = {
-    [GraphEvents.CHAT_MODEL_END]: new ModelEndHandler(collectedUsage),
+    [GraphEvents.CHAT_MODEL_END]: new ModelEndHandler(collectedUsage, nativeToolOptions),
     [GraphEvents.TOOL_END]: new ToolEndHandler(toolEndCallback, logger),
     [GraphEvents.ON_RUN_STEP]: {
       /**
