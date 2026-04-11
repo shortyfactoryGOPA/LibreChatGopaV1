@@ -101,7 +101,10 @@ function ImportAgents() {
 
   return (
     <div className="flex items-center justify-between">
-      <Label id="import-agents-label">{localize('com_ui_import_agents_info')}</Label>
+      <div className="flex flex-col" id="import-agents-label">
+        <Label>{localize('com_ui_import_agents_label')}</Label>
+        <span className="text-xs text-text-secondary">{localize('com_ui_import_agents_info')}</span>
+      </div>
       <Button
         variant="outline"
         onClick={() => fileInputRef.current?.click()}
