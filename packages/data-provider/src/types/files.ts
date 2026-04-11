@@ -5,6 +5,7 @@ export enum FileSources {
   firebase = 'firebase',
   azure = 'azure',
   azure_blob = 'azure_blob',
+  azure_responses = 'azure_responses',
   openai = 'openai',
   s3 = 's3',
   vectordb = 'vectordb',
@@ -115,7 +116,7 @@ export type TFile = {
   height?: number;
   expiresAt?: string | Date;
   preview?: string;
-  metadata?: { fileIdentifier?: string };
+  metadata?: { fileIdentifier?: string; container_id?: string };
   createdAt?: string | Date;
   updatedAt?: string | Date;
 };

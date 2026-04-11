@@ -53,6 +53,17 @@ export async function loadEphemeralAgent(
   if (spec != null && spec !== '') {
     modelSpec = modelSpecs?.list?.find((s) => s.name === spec) ?? null;
   }
+
+  /** Inject native tool flags from model spec preset into model_parameters so
+   *  getOpenAILLMConfig can add the corresponding Responses API tool definitions.
+   *  Only set if not already present in the request (frontend may send explicit false). */
+  const params = model_parameters as Record<string, unknown>;
+  if (modelSpec?.preset?.code_interpreter === true && !('code_interpreter' in params)) {
+    params.code_interpreter = true;
+  }
+  if (modelSpec?.preset?.web_search === true && !('web_search' in params)) {
+    params.web_search = true;
+  }
   const ephemeralAgent: TEphemeralAgent | undefined = req.body?.ephemeralAgent;
   const mcpServers = new Set<string>(ephemeralAgent?.mcp);
   const userId = req.user?.id ?? '';

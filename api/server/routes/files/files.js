@@ -310,6 +310,47 @@ router.get('/download/:userId/:file_id', fileAccess, async (req, res) => {
     // Access already validated by fileAccess middleware
     const file = req.fileAccess.file;
 
+    if (file.source === FileSources.azure_responses) {
+      const container_id = file.metadata?.container_id;
+      if (!container_id) {
+        logger.warn(`[azure_responses] Missing container_id for file ${file_id}`);
+        return res.status(400).send('Missing container ID for this file');
+      }
+
+      const apiKey = process.env.AZURE_OPENAI_API_KEY || process.env.AZURE_API_KEY || '';
+      if (!apiKey) {
+        logger.warn(`[azure_responses] Azure API key not configured for file ${file_id}`);
+        return res.status(500).send('Azure API key not configured');
+      }
+
+      let baseURL = (process.env.AZURE_OPENAI_BASEURL || '').replace(/\/deployments(?:\/.*)?$/, '/v1');
+      if (!baseURL) {
+        const instanceName = process.env.AZURE_OPENAI_INSTANCE_NAME || '';
+        if (instanceName) {
+          baseURL = `https://${instanceName}.openai.azure.com/openai/v1`;
+        }
+      }
+      if (!baseURL) {
+        logger.warn(`[azure_responses] Azure base URL not configured for file ${file_id}`);
+        return res.status(500).send('Azure OpenAI base URL not configured');
+      }
+
+      const downloadURL = `${baseURL}/containers/${container_id}/files/${file_id}/content?api-version=preview`;
+      logger.debug(`[azure_responses] Proxying download for file ${file_id} from container ${container_id}`);
+
+      const response = await fetch(downloadURL, { headers: { 'api-key': apiKey } });
+      if (!response.ok) {
+        logger.error(`[azure_responses] Azure returned ${response.status} for file ${file_id}`);
+        return res.status(response.status).send('Error downloading file from Azure');
+      }
+
+      const cleanedFilename = cleanFileName(file.filename);
+      res.setHeader('Content-Disposition', `attachment; filename="${cleanedFilename}"`);
+      res.setHeader('Content-Type', file.type || 'application/octet-stream');
+      Readable.fromWeb(response.body).pipe(res);
+      return;
+    }
+
     if (checkOpenAIStorage(file.source) && !file.model) {
       logger.warn(`File download requested by user ${userId} has no associated model: ${file_id}`);
       return res.status(400).send('The model used when creating this file is not available');
