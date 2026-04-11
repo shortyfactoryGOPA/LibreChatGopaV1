@@ -116,9 +116,8 @@ export const refreshListAvatars = async ({
   }
 
   const { urlCache: _urlCache, ...loggableStats } = stats;
-  logger.info('[refreshListAvatars] Avatar refresh summary: %s', JSON.stringify({
-    ...loggableStats,
-    urlCacheSize: Object.keys(_urlCache).length,
-  }));
+  logger.info(
+    `[refreshListAvatars] Avatar refresh summary: ${JSON.stringify({ ...loggableStats, urlCacheSize: Object.keys(_urlCache).length })}`,
+  );
   return stats;
 };
