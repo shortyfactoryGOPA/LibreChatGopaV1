@@ -3,7 +3,7 @@ import { useOnClickOutside } from '@librechat/client';
 import { Permissions, PermissionTypes } from 'librechat-data-provider';
 import ImportConversations from './ImportConversations';
 import ImportPrompts from './ImportPrompts';
-import ImportPresets from './ImportPresets';
+import ImportAgents from './ImportAgents';
 import { AgentApiKeys } from './AgentApiKeys';
 import { DeleteCache } from './DeleteCache';
 import { RevokeKeys } from './RevokeKeys';
@@ -29,7 +29,7 @@ function Data() {
         <ImportPrompts />
       </div>
       <div className="pb-3">
-        <ImportPresets />
+        <ImportAgents />
       </div>
       <div className="pb-3">
         <SharedLinks />
