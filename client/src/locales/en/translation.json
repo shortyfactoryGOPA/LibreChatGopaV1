@@ -1085,7 +1085,7 @@
   "com_ui_import_invalid_format": "Invalid file format",
   "com_ui_import_prompts_info": "Import prompts from a JSON file",
   "com_ui_import_prompts_success": "Imported {{0}} prompts ({{1}} skipped, {{2}} errors)",
-  "com_ui_import_agents_info": "Import agents from a JSON file",
+  "com_ui_import_agents_info": "Import agents (presets from old chatbot version) from a JSON file",
   "com_ui_import_agents_success": "Imported {{0}} agents ({{1}} skipped, {{2}} errors)",
   "com_ui_importing": "Importing",
   "com_ui_include_shadcnui": "Include shadcn/ui components instructions",
