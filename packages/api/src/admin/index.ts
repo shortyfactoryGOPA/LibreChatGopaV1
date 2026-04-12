@@ -8,3 +8,7 @@ export type { AdminGrantsDeps, GrantPrincipalType } from './grants';
 export type { AdminGroupsDeps } from './groups';
 export type { AdminRolesDeps } from './roles';
 export type { AdminUsersDeps } from './users';
+export * from './types';
+export * from './utils';
+export * from './moderation';
+export * from './service';
