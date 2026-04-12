@@ -65,6 +65,9 @@ export enum QueryKeys {
   activeJobs = 'activeJobs',
   /* Agent API Keys */
   agentApiKeys = 'agentApiKeys',
+  /* DeepL */
+  adminDeepLJobs = 'adminDeepLJobs',
+  deeplLanguages = 'deeplLanguages',
 }
 
 // Dynamic query keys that require parameters
@@ -97,4 +100,8 @@ export enum MutationKeys {
   enableTwoFactor = 'enableTwoFactor',
   verifyTwoFactor = 'verifyTwoFactor',
   updateMemoryPreferences = 'updateMemoryPreferences',
+  /* DeepL */
+  deeplUpload = 'deeplUpload',
+  deeplStatus = 'deeplStatus',
+  deeplDownload = 'deeplDownload',
 }
