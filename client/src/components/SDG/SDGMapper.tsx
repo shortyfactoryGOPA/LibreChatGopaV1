@@ -92,7 +92,7 @@ function ChildrenTable({
       <table className="w-full border-collapse text-sm">
         <thead className="bg-surface-tertiary text-left">
           <tr>
-            <th className="px-3 py-2 font-medium text-text-primary">{localize('com_ui_name')}</th>
+            <th className="whitespace-nowrap px-3 py-2 font-medium text-text-primary">{localize('com_ui_name')}</th>
             <th className="px-3 py-2 font-medium text-text-primary">{localize('com_ui_title')}</th>
             <th className="px-3 py-2 text-right font-medium text-text-primary">
               {localize('com_ui_gopa_sdg_occurrences')}
@@ -103,7 +103,7 @@ function ChildrenTable({
           {nodes.map((node) => (
             <Fragment key={`${node.id ?? node.name}-${node.occurrences}`}>
               <tr className="border-t border-border-light align-top">
-                <td className="px-3 py-3 font-medium text-text-primary">{node.name}</td>
+                <td className="whitespace-nowrap px-3 py-3 font-medium text-text-primary">{node.name}</td>
                 <td className="px-3 py-3 text-sm leading-6 text-text-secondary">
                   {node.title ?? '-'}
                 </td>
