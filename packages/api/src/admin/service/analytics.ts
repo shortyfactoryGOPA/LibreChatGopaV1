@@ -22,6 +22,7 @@ import type {
   AdminAnalyticsUsersResponse,
   AdminDeepLJobsQuery,
   AdminDeepLJobsResponse,
+  AdminFileRetentionConstraints,
   AdminFileRetentionResponse,
   AdminFileRetentionUpdateInput,
   AdminFileRetentionUpdateResponse,
@@ -113,7 +114,7 @@ export const createAdminAnalyticsUsersResponse = ({
   };
 };
 
-export const createAdminFileRetentionConstraints = () => {
+export const createAdminFileRetentionConstraints = (): AdminFileRetentionConstraints => {
   return {
     defaultRetentionDays: DEFAULT_RETENTION_DAYS,
     minRetentionDays: MIN_RETENTION_DAYS,
