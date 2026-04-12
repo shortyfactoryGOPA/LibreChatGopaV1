@@ -683,3 +683,6 @@ export * from './types/deepl';
 
 /* SDG */
 export * from './types/sdg';
+
+/* Admin */
+export * from './types/admin';

@@ -434,3 +434,33 @@ export type DeepLDownloadOptions = MutationOptions<
 >;
 
 export type SDGMapOptions = MutationOptions<types.SDGMapResponse, FormData>;
+
+export type AdminBanUserOptions = MutationOptions<
+  types.AdminBanUserResponse,
+  types.AdminBanUserRequest
+>;
+
+export type AdminUnbanUserOptions = MutationOptions<
+  types.AdminUnbanUserResponse,
+  types.AdminUnbanUserRequest
+>;
+
+export type AdminResetPasswordOptions = MutationOptions<
+  types.AdminResetPasswordResponse,
+  types.AdminResetPasswordRequest
+>;
+
+export type AdminDeleteUserOptions = MutationOptions<
+  types.AdminDeleteUserResponse,
+  types.AdminDeleteUserRequest
+>;
+
+export type AdminUpdateFileRetentionOptions = MutationOptions<
+  types.AdminFileRetentionUpdateResponse,
+  types.AdminFileRetentionUpdateInput
+>;
+
+export type AdminPurgeFileRetentionOptions = MutationOptions<
+  types.AdminFileRetentionPurgeResponse,
+  void
+>;
