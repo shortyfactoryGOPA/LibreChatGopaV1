@@ -65,6 +65,7 @@ export enum QueryKeys {
   activeJobs = 'activeJobs',
   /* Agent API Keys */
   agentApiKeys = 'agentApiKeys',
+
   /* Admin */
   adminUsers = 'adminUsers',
   adminModeration = 'adminModeration',
@@ -111,6 +112,7 @@ export enum MutationKeys {
   deeplDownload = 'deeplDownload',
   /* SDG */
   mapSDG = 'mapSDG',
+
   /* Admin */
   adminBanUser = 'adminBanUser',
   adminUnbanUser = 'adminUnbanUser',
