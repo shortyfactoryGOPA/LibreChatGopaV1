@@ -56,6 +56,9 @@ export default defineConfig(({ command }) => ({
   // Set the directory where environment variables are loaded from and restrict prefixes
   envDir: '../',
   envPrefix: ['VITE_', 'SCRIPT_', 'DOMAIN_', 'ALLOW_'],
+  optimizeDeps: {
+    include: ['librechat-data-provider'],
+  },
   plugins: [
     react(),
     {
