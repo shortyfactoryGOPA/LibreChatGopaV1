@@ -3,6 +3,7 @@ const assistants = require('./assistants');
 const deepl = require('./deepl');
 const sdg = require('./sdg');
 const categories = require('./categories');
+const adminPanel = require('./admin/panel');
 const adminAuth = require('./admin/auth');
 const adminConfig = require('./admin/config');
 const adminGrants = require('./admin/grants');
@@ -37,6 +38,7 @@ const mcp = require('./mcp');
 module.exports = {
   mcp,
   auth,
+  adminPanel,
   adminAuth,
   adminConfig,
   adminGrants,
