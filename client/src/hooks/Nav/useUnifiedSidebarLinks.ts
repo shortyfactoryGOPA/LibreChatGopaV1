@@ -1,6 +1,7 @@
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useRecoilValue } from 'recoil';
-import { MessagesSquare } from 'lucide-react';
+import { Languages, MessagesSquare } from 'lucide-react';
 import { useUserKeyQuery } from 'librechat-data-provider/react-query';
 import { getConfigDefaults, getEndpointField } from 'librechat-data-provider';
 import type { TEndpointsConfig } from 'librechat-data-provider';
@@ -13,6 +14,7 @@ import store from '~/store';
 const defaultInterface = getConfigDefaults().interface;
 
 export default function useUnifiedSidebarLinks() {
+  const navigate = useNavigate();
   const conversation = useRecoilValue(store.conversationByIndex(0));
   const endpoint = conversation?.endpoint;
   const { data: startupConfig } = useGetStartupConfig();
@@ -49,6 +51,8 @@ export default function useUnifiedSidebarLinks() {
     includeHidePanel: false,
   });
 
+  const handleDeepLNavigate = useCallback(() => navigate('/deepl'), [navigate]);
+
   const links = useMemo(() => {
     const conversationLink: NavLink = {
       title: 'com_ui_chat_history',
@@ -58,8 +62,16 @@ export default function useUnifiedSidebarLinks() {
       Component: ConversationsSection,
     };
 
-    return [conversationLink, ...sideNavLinks];
-  }, [sideNavLinks]);
+    const deeplLink: NavLink = {
+      title: 'com_ui_gopa_nav_document_translator',
+      label: '',
+      icon: Languages,
+      id: 'deepl',
+      onClick: handleDeepLNavigate,
+    };
+
+    return [conversationLink, ...sideNavLinks, deeplLink];
+  }, [sideNavLinks, handleDeepLNavigate]);
 
   return links;
 }
