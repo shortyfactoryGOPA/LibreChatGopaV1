@@ -1,15 +1,6 @@
 import { Document } from 'mongoose';
 
-export type DeepLJobProviderDetailPrimitive = boolean | number | string | null;
-
-export interface DeepLJobProviderDetailObject {
-  [key: string]: DeepLJobProviderDetails;
-}
-
-export type DeepLJobProviderDetails =
-  | DeepLJobProviderDetailPrimitive
-  | DeepLJobProviderDetailObject
-  | DeepLJobProviderDetails[];
+export type DeepLJobProviderDetails = Record<string, boolean | number | string | null> | boolean | number | string | null;
 
 export interface IDeepLJobAnalytics extends Omit<Document, 'model'> {
   documentId?: string;

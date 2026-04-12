@@ -49,6 +49,8 @@ import { createPromptMethods, type PromptMethods, type PromptDeps } from './prom
 import { createAgentMethods, type AgentMethods, type AgentDeps } from './agent';
 /* Config */
 import { createConfigMethods, type ConfigMethods } from './config';
+/* DeepL */
+import { createDeepLJobMethods, type DeepLJobMethods } from './deeplJob';
 
 export { RoleConflictError, DEFAULT_REFRESH_TOKEN_EXPIRY, DEFAULT_SESSION_EXPIRY };
 export { tokenValues, cacheTokenValues, premiumTokenValues, defaultRate };
@@ -83,7 +85,8 @@ export type AllMethods = UserMethods &
   SpendTokensMethods &
   PromptMethods &
   AgentMethods &
-  ConfigMethods;
+  ConfigMethods &
+  DeepLJobMethods;
 
 /** Dependencies injected from the api layer into createMethods */
 export interface CreateMethodsDeps {
@@ -206,6 +209,8 @@ export function createMethods(
     ...agentMethods,
     /* Config */
     ...createConfigMethods(mongoose),
+    /* DeepL */
+    ...createDeepLJobMethods(mongoose),
   };
 }
 
@@ -241,4 +246,5 @@ export type {
   PromptMethods,
   AgentMethods,
   ConfigMethods,
+  DeepLJobMethods,
 };
