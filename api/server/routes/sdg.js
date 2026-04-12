@@ -1,9 +1,12 @@
-const express = require('express');
+const fs = require('fs');
 const multer = require('multer');
+const express = require('express');
 const { logger } = require('@librechat/data-schemas');
-const { checkBan, requireJwtAuth, createFileLimiters } = require('~/server/middleware');
+const { storage } = require('~/server/routes/files/multer');
+const { checkBan, uaParser, requireJwtAuth, configMiddleware, createFileLimiters } = require('~/server/middleware');
 const {
   mapSDGInput,
+  MAX_SDG_INPUT_TEXT_LENGTH,
   SDG_UPLOAD_FILE_SIZE_LIMIT_BYTES,
   normalizeSDGUploadMimeType,
   isSDGUploadMimeType,
@@ -12,9 +15,10 @@ const {
 const router = express.Router();
 
 const upload = multer({
-  storage: multer.memoryStorage(),
+  storage,
   limits: {
     fileSize: SDG_UPLOAD_FILE_SIZE_LIMIT_BYTES,
+    fieldSize: MAX_SDG_INPUT_TEXT_LENGTH * 4,
     files: 1,
     fields: 4,
   },
@@ -65,7 +69,9 @@ const uploadSingleFile = (req, res, next) => {
 };
 
 router.use(requireJwtAuth);
+router.use(configMiddleware);
 router.use(checkBan);
+router.use(uaParser);
 
 const { fileUploadIpLimiter, fileUploadUserLimiter } = createFileLimiters();
 
@@ -90,6 +96,10 @@ router.post(
       return res
         .status(getSDGErrorStatusCode(error))
         .json({ message: getSDGErrorMessage(error, 'The SDG analysis could not be completed.') });
+    } finally {
+      if (req.file?.path) {
+        await fs.promises.unlink(req.file.path).catch(() => {});
+      }
     }
   },
 );
