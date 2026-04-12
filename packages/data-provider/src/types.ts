@@ -677,3 +677,6 @@ export type TBalanceResponse = {
   lastRefill?: Date;
   refillAmount?: number;
 };
+
+/* DeepL */
+export * from './types/deepl';

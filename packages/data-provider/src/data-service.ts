@@ -1,5 +1,6 @@
 import type { AxiosResponse } from 'axios';
 import type * as t from './types';
+import type * as deepl from './types/deepl';
 import * as endpoints from './api-endpoints';
 import * as a from './types/assistants';
 import * as ag from './types/agents';
@@ -1087,3 +1088,24 @@ export interface ActiveJobsResponse {
 export const getActiveJobs = (): Promise<ActiveJobsResponse> => {
   return request.get(endpoints.activeJobs());
 };
+
+/* DeepL */
+export function getDeepLLanguages(): Promise<deepl.DeepLLanguagesResponse> {
+  return request.get(endpoints.deeplLanguages());
+}
+
+export function uploadDeepLDocument(data: FormData): Promise<deepl.DeepLUploadResponse> {
+  return request.postMultiPart(endpoints.deeplUpload(), data);
+}
+
+export function getDeepLDocumentStatus(
+  payload: deepl.DeepLDocumentHandle,
+): Promise<deepl.DeepLStatusResponse> {
+  return request.post(endpoints.deeplStatus(), payload);
+}
+
+export function downloadDeepLDocument(
+  payload: deepl.DeepLDocumentHandle,
+): Promise<AxiosResponse<Blob>> {
+  return request.postResponse(endpoints.deeplDownload(), payload, { responseType: 'blob' });
+}

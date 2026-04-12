@@ -420,3 +420,15 @@ export interface CancelMCPOAuthResponse {
   success: boolean;
   message: string;
 }
+
+export type DeepLUploadOptions = MutationOptions<types.DeepLUploadResponse, FormData>;
+
+export type DeepLStatusOptions = MutationOptions<
+  types.DeepLStatusResponse,
+  types.DeepLDocumentHandle
+>;
+
+export type DeepLDownloadOptions = MutationOptions<
+  import('axios').AxiosResponse<Blob>,
+  types.DeepLDocumentHandle
+>;
