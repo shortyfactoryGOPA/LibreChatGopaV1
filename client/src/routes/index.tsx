@@ -21,6 +21,9 @@ import ChatRoute from './ChatRoute';
 import Search from './Search';
 import DeepL from './DeepL';
 import SDG from './SDG';
+import AdminAnalytics from './AdminAnalytics';
+import AdminModeration from './AdminModeration';
+import AdminUsers from './AdminUsers';
 import UserGuide from './UserGuide';
 import Root from './Root';
 
@@ -158,6 +161,18 @@ export const router = createBrowserRouter(
             {
               path: 'guide',
               element: <UserGuide />,
+            },
+            {
+              path: 'admin/users',
+              element: <AdminUsers />,
+            },
+            {
+              path: 'admin/moderation',
+              element: <AdminModeration />,
+            },
+            {
+              path: 'admin/analytics',
+              element: <AdminAnalytics />,
             },
           ],
         },
