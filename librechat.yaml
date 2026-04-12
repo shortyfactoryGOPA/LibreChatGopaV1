@@ -405,7 +405,7 @@ endpoints:
   #     # Trace output is logged to application log files for compliance auditing
   #     trace: "enabled"
 modelSpecs:
-  enforce: true
+  enforce: false
   list:
     - name: "azure-gpt-5-2"
       label: "GPT-5.2"
@@ -433,6 +433,7 @@ modelSpecs:
         web_search: true
         code_interpreter: true
         temperature: 0.3
+
 
 # Example modelSpecs configuration showing grouping options
 # The 'group' field organizes model specs in the UI selector:
