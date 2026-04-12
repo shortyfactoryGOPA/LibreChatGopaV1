@@ -104,4 +104,6 @@ export enum MutationKeys {
   deeplUpload = 'deeplUpload',
   deeplStatus = 'deeplStatus',
   deeplDownload = 'deeplDownload',
+  /* SDG */
+  mapSDG = 'mapSDG',
 }

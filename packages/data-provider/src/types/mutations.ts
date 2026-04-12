@@ -432,3 +432,5 @@ export type DeepLDownloadOptions = MutationOptions<
   import('axios').AxiosResponse<Blob>,
   types.DeepLDocumentHandle
 >;
+
+export type SDGMapOptions = MutationOptions<types.SDGMapResponse, FormData>;
