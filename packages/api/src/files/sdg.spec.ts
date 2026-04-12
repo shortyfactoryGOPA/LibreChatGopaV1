@@ -67,7 +67,7 @@ describe('sdg', () => {
         }),
         { status: 200, headers: { 'Content-Type': 'application/json' } },
       ),
-    ) as jest.MockedFunction<typeof fetch>;
+    ) as unknown as jest.MockedFunction<typeof fetch>;
 
     global.fetch = fetchMock;
 
@@ -142,7 +142,7 @@ describe('sdg', () => {
         }),
         { status: 200, headers: { 'Content-Type': 'application/json' } },
       ),
-    ) as jest.MockedFunction<typeof fetch>;
+    ) as unknown as jest.MockedFunction<typeof fetch>;
 
     global.fetch = fetchMock;
     mockedParseDocument.mockResolvedValue({
@@ -179,7 +179,7 @@ describe('sdg', () => {
   it('uses native text parsing for text uploads and handles empty 204 responses', async () => {
     const fetchMock = jest.fn().mockResolvedValue(
       new Response(null, { status: 204 }),
-    ) as jest.MockedFunction<typeof fetch>;
+    ) as unknown as jest.MockedFunction<typeof fetch>;
 
     global.fetch = fetchMock;
     mockedParseTextNative.mockResolvedValue({
