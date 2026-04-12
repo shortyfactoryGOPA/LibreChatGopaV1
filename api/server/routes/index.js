@@ -1,6 +1,7 @@
 const accessPermissions = require('./accessPermissions');
 const assistants = require('./assistants');
 const deepl = require('./deepl');
+const sdg = require('./sdg');
 const categories = require('./categories');
 const adminAuth = require('./admin/auth');
 const adminConfig = require('./admin/config');
@@ -68,4 +69,5 @@ module.exports = {
   staticRoute,
   accessPermissions,
   deepl,
+  sdg,
 };
