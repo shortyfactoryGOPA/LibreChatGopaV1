@@ -1,13 +1,16 @@
 import { useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRecoilValue } from 'recoil';
-import { BookOpen, Languages, MessagesSquare, Target } from 'lucide-react';
+import { BookOpen, Languages, MessagesSquare, ShieldCheck, Target } from 'lucide-react';
+import { SystemRoles } from 'librechat-data-provider';
 import { useUserKeyQuery } from 'librechat-data-provider/react-query';
 import { getConfigDefaults, getEndpointField } from 'librechat-data-provider';
 import type { TEndpointsConfig } from 'librechat-data-provider';
 import type { NavLink } from '~/common';
+import AdminNavPanel from '~/components/Nav/AdminNavPanel';
 import ConversationsSection from '~/components/UnifiedSidebar/ConversationsSection';
 import { useGetEndpointsQuery, useGetStartupConfig } from '~/data-provider';
+import { useAuthContext } from '~/hooks/AuthContext';
 import useSideNavLinks from '~/hooks/Nav/useSideNavLinks';
 import store from '~/store';
 
@@ -15,6 +18,7 @@ const defaultInterface = getConfigDefaults().interface;
 
 export default function useUnifiedSidebarLinks() {
   const navigate = useNavigate();
+  const { user } = useAuthContext();
   const conversation = useRecoilValue(store.conversationByIndex(0));
   const endpoint = conversation?.endpoint;
   const { data: startupConfig } = useGetStartupConfig();
@@ -55,6 +59,8 @@ export default function useUnifiedSidebarLinks() {
   const handleSDGNavigate = useCallback(() => navigate('/sdg'), [navigate]);
   const handleGuideNavigate = useCallback(() => navigate('/guide'), [navigate]);
 
+  const isAdmin = user?.role === SystemRoles.ADMIN;
+
   const links = useMemo(() => {
     const conversationLink: NavLink = {
       title: 'com_ui_chat_history',
@@ -88,8 +94,17 @@ export default function useUnifiedSidebarLinks() {
       onClick: handleGuideNavigate,
     };
 
-    return [conversationLink, ...sideNavLinks, deeplLink, sdgLink, guideLink];
-  }, [sideNavLinks, handleDeepLNavigate, handleSDGNavigate, handleGuideNavigate]);
+    const adminLink: NavLink = {
+      title: 'com_ui_admin',
+      label: '',
+      icon: ShieldCheck,
+      id: 'admin',
+      Component: AdminNavPanel,
+    };
+
+    const baseLinks = [conversationLink, ...sideNavLinks, deeplLink, sdgLink, guideLink];
+    return isAdmin ? [...baseLinks, adminLink] : baseLinks;
+  }, [sideNavLinks, handleDeepLNavigate, handleSDGNavigate, handleGuideNavigate, isAdmin]);
 
   return links;
 }
