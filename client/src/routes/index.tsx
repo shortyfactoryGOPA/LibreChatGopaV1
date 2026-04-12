@@ -20,6 +20,7 @@ import ShareRoute from './ShareRoute';
 import ChatRoute from './ChatRoute';
 import Search from './Search';
 import DeepL from './DeepL';
+import SDG from './SDG';
 import Root from './Root';
 
 const AuthLayout = () => (
@@ -148,6 +149,10 @@ export const router = createBrowserRouter(
             {
               path: 'deepl',
               element: <DeepL />,
+            },
+            {
+              path: 'sdg',
+              element: <SDG />,
             },
           ],
         },

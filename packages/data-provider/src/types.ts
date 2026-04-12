@@ -680,3 +680,6 @@ export type TBalanceResponse = {
 
 /* DeepL */
 export * from './types/deepl';
+
+/* SDG */
+export * from './types/sdg';

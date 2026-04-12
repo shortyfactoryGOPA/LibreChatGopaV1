@@ -1,7 +1,7 @@
 import { useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRecoilValue } from 'recoil';
-import { Languages, MessagesSquare } from 'lucide-react';
+import { Languages, MessagesSquare, Target } from 'lucide-react';
 import { useUserKeyQuery } from 'librechat-data-provider/react-query';
 import { getConfigDefaults, getEndpointField } from 'librechat-data-provider';
 import type { TEndpointsConfig } from 'librechat-data-provider';
@@ -52,6 +52,7 @@ export default function useUnifiedSidebarLinks() {
   });
 
   const handleDeepLNavigate = useCallback(() => navigate('/deepl'), [navigate]);
+  const handleSDGNavigate = useCallback(() => navigate('/sdg'), [navigate]);
 
   const links = useMemo(() => {
     const conversationLink: NavLink = {
@@ -70,8 +71,16 @@ export default function useUnifiedSidebarLinks() {
       onClick: handleDeepLNavigate,
     };
 
-    return [conversationLink, ...sideNavLinks, deeplLink];
-  }, [sideNavLinks, handleDeepLNavigate]);
+    const sdgLink: NavLink = {
+      title: 'com_ui_gopa_nav_sdg_mapper',
+      label: '',
+      icon: Target,
+      id: 'sdg',
+      onClick: handleSDGNavigate,
+    };
+
+    return [conversationLink, ...sideNavLinks, deeplLink, sdgLink];
+  }, [sideNavLinks, handleDeepLNavigate, handleSDGNavigate]);
 
   return links;
 }
