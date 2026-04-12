@@ -21,6 +21,7 @@ import ChatRoute from './ChatRoute';
 import Search from './Search';
 import DeepL from './DeepL';
 import SDG from './SDG';
+import UserGuide from './UserGuide';
 import Root from './Root';
 
 const AuthLayout = () => (
@@ -153,6 +154,10 @@ export const router = createBrowserRouter(
             {
               path: 'sdg',
               element: <SDG />,
+            },
+            {
+              path: 'guide',
+              element: <UserGuide />,
             },
           ],
         },

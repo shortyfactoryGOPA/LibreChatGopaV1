@@ -1,7 +1,7 @@
 import { useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRecoilValue } from 'recoil';
-import { Languages, MessagesSquare, Target } from 'lucide-react';
+import { BookOpen, Languages, MessagesSquare, Target } from 'lucide-react';
 import { useUserKeyQuery } from 'librechat-data-provider/react-query';
 import { getConfigDefaults, getEndpointField } from 'librechat-data-provider';
 import type { TEndpointsConfig } from 'librechat-data-provider';
@@ -53,6 +53,7 @@ export default function useUnifiedSidebarLinks() {
 
   const handleDeepLNavigate = useCallback(() => navigate('/deepl'), [navigate]);
   const handleSDGNavigate = useCallback(() => navigate('/sdg'), [navigate]);
+  const handleGuideNavigate = useCallback(() => navigate('/guide'), [navigate]);
 
   const links = useMemo(() => {
     const conversationLink: NavLink = {
@@ -79,8 +80,16 @@ export default function useUnifiedSidebarLinks() {
       onClick: handleSDGNavigate,
     };
 
-    return [conversationLink, ...sideNavLinks, deeplLink, sdgLink];
-  }, [sideNavLinks, handleDeepLNavigate, handleSDGNavigate]);
+    const guideLink: NavLink = {
+      title: 'com_ui_gopa_user_guide',
+      label: '',
+      icon: BookOpen,
+      id: 'guide',
+      onClick: handleGuideNavigate,
+    };
+
+    return [conversationLink, ...sideNavLinks, deeplLink, sdgLink, guideLink];
+  }, [sideNavLinks, handleDeepLNavigate, handleSDGNavigate, handleGuideNavigate]);
 
   return links;
 }
