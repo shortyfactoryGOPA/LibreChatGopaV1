@@ -27,3 +27,5 @@ export { default as groupSchema } from './group';
 export { default as systemGrantSchema } from './systemGrant';
 export { default as configSchema } from './config';
 export { default as deeplJobSchema } from './deeplJob';
+export { default as fileRetentionSchema } from './fileRetention';
+export { default as fileUploadStatSchema } from './fileUploadStat';
