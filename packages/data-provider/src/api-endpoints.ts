@@ -441,3 +441,12 @@ export const getAllEffectivePermissions = (resourceType: ResourceType) =>
 // SharePoint Graph API Token
 export const graphToken = (scopes: string) =>
   `${BASE_URL}/api/auth/graph-token?scopes=${encodeURIComponent(scopes)}`;
+
+/* DeepL */
+export const deeplLanguages = () => `${BASE_URL}/api/deepl/languages`;
+
+export const deeplUpload = () => `${BASE_URL}/api/deepl/upload`;
+
+export const deeplStatus = () => `${BASE_URL}/api/deepl/status`;
+
+export const deeplDownload = () => `${BASE_URL}/api/deepl/download`;
