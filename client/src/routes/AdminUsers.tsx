@@ -256,7 +256,7 @@ export default function AdminUsers() {
                         {row.emailVerified ? localize('com_ui_yes') : localize('com_ui_no')}
                       </td>
                       <td className="px-4 py-3 text-text-secondary">
-                        {row.isBanned ? localize('com_ui_active') : localize('com_ui_no')}
+                        {row.isBanned ? localize('com_ui_admin_banned') : localize('com_ui_no')}
                       </td>
                       <td className="px-4 py-3 text-text-secondary">
                         {formatDateTime(row.createdAt)}
