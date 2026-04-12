@@ -450,3 +450,6 @@ export const deeplUpload = () => `${BASE_URL}/api/deepl/upload`;
 export const deeplStatus = () => `${BASE_URL}/api/deepl/status`;
 
 export const deeplDownload = () => `${BASE_URL}/api/deepl/download`;
+
+/* SDG */
+export const sdg = () => `${BASE_URL}/api/sdg`;

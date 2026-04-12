@@ -1109,3 +1109,9 @@ export function downloadDeepLDocument(
 ): Promise<AxiosResponse<Blob>> {
   return request.postResponse(endpoints.deeplDownload(), payload, { responseType: 'blob' });
 }
+
+/* SDG */
+export function mapSDG(data: FormData, signal?: AbortSignal | null): Promise<t.SDGMapResponse> {
+  const requestConfig = signal ? { signal } : undefined;
+  return request.postMultiPart(endpoints.sdg(), data, requestConfig);
+}
