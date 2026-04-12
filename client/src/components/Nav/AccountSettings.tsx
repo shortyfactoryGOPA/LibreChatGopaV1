@@ -73,15 +73,20 @@ function AccountSettings({ collapsed = false }: { collapsed?: boolean }) {
           <FileText className="icon-md" aria-hidden="true" />
           {localize('com_nav_my_files')}
         </Menu.MenuItem>
-        {startupConfig?.helpAndFaqURL !== '/' && (
-          <Menu.MenuItem
-            onClick={() => window.open(startupConfig?.helpAndFaqURL, '_blank')}
-            className="select-item text-sm"
-          >
-            <LinkIcon aria-hidden="true" />
-            {localize('com_nav_help_faq')}
-          </Menu.MenuItem>
-        )}
+        <Menu.MenuItem
+          onClick={() => window.open('https://gopagroup.sharepoint.com/sites/Academy/SitePages/GOPA-Group-AI-Chatbot.aspx', '_blank')}
+          className="select-item text-sm"
+        >
+          <LinkIcon aria-hidden="true" />
+          GOPA AI Training
+        </Menu.MenuItem>
+        <Menu.MenuItem
+          onClick={() => window.open('https://gopagroup.sharepoint.com/sites/GOPAGroup-LearningPlatform/SiteAssets/Forms/AllItems.aspx?id=%2Fsites%2FGOPAGroup%2DLearningPlatform%2FSiteAssets%2FSitePages%2FGOPA%2DGroup%2DAI%2DChatbot%2FGOPA%2DGroup%5FPolicy%2Don%2Dthe%2DUse%2Dof%2DGenerative%2DAI%2Epdf&parent=%2Fsites%2FGOPAGroup%2DLearningPlatform%2FSiteAssets%2FSitePages%2FGOPA%2DGroup%2DAI%2DChatbot', '_blank')}
+          className="select-item text-sm"
+        >
+          <LinkIcon aria-hidden="true" />
+          GOPA Group Policy on the Use of Generative AI
+        </Menu.MenuItem>
         <Menu.MenuItem onClick={() => setShowSettings(true)} className="select-item text-sm">
           <GearIcon className="icon-md" aria-hidden="true" />
           {localize('com_nav_settings')}
