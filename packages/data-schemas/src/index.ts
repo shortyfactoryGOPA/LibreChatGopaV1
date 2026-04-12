@@ -4,6 +4,14 @@ export * from './common';
 export * from './crypto';
 export * from './schema';
 export * from './utils';
+export {
+  SIDEBAR_FILE_RETENTION_SETTINGS_KEY,
+  DEFAULT_RETENTION_DAYS,
+  MIN_RETENTION_DAYS,
+  MAX_RETENTION_DAYS,
+  RETENTION_BATCH_LIMIT,
+  ELIGIBLE_CONTEXTS,
+} from './fileRetention';
 export { createModels } from './models';
 export {
   createMethods,

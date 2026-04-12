@@ -51,6 +51,9 @@ import { createAgentMethods, type AgentMethods, type AgentDeps } from './agent';
 import { createConfigMethods, type ConfigMethods } from './config';
 /* DeepL */
 import { createDeepLJobMethods, type DeepLJobMethods } from './deeplJob';
+/* File Retention */
+import { createFileRetentionMethods, type FileRetentionMethods } from './fileRetention';
+import { createFileUploadStatMethods, type FileUploadStatMethods } from './fileUploadStat';
 
 export { RoleConflictError, DEFAULT_REFRESH_TOKEN_EXPIRY, DEFAULT_SESSION_EXPIRY };
 export { tokenValues, cacheTokenValues, premiumTokenValues, defaultRate };
@@ -86,7 +89,9 @@ export type AllMethods = UserMethods &
   PromptMethods &
   AgentMethods &
   ConfigMethods &
-  DeepLJobMethods;
+  DeepLJobMethods &
+  FileRetentionMethods &
+  FileUploadStatMethods;
 
 /** Dependencies injected from the api layer into createMethods */
 export interface CreateMethodsDeps {
@@ -211,6 +216,9 @@ export function createMethods(
     ...createConfigMethods(mongoose),
     /* DeepL */
     ...createDeepLJobMethods(mongoose),
+    /* File Retention */
+    ...createFileRetentionMethods(mongoose),
+    ...createFileUploadStatMethods(mongoose),
   };
 }
 
@@ -247,4 +255,6 @@ export type {
   AgentMethods,
   ConfigMethods,
   DeepLJobMethods,
+  FileRetentionMethods,
+  FileUploadStatMethods,
 };

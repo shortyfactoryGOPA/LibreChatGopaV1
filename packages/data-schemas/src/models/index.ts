@@ -29,6 +29,8 @@ import { createSystemGrantModel } from './systemGrant';
 import { createGroupModel } from './group';
 import { createConfigModel } from './config';
 import { createDeepLJobModel } from './deeplJob';
+import { createFileRetentionSettingsModel } from './fileRetention';
+import { createFileUploadStatsModel } from './fileUploadStat';
 
 /**
  * Creates all database models for all collections
@@ -66,5 +68,7 @@ export function createModels(mongoose: typeof import('mongoose')) {
     Group: createGroupModel(mongoose),
     Config: createConfigModel(mongoose),
     DeepLJobAnalytics: createDeepLJobModel(mongoose),
+    FileRetentionSettings: createFileRetentionSettingsModel(mongoose),
+    FileUploadStats: createFileUploadStatsModel(mongoose),
   };
 }
