@@ -451,4 +451,5 @@ export const deeplStatus = () => `${BASE_URL}/api/deepl/status`;
 
 export const deeplDownload = () => `${BASE_URL}/api/deepl/download`;
 
+/* SDG */
 export const sdg = () => `${BASE_URL}/api/sdg`;
