@@ -1,4 +1,5 @@
 import type { AssistantsEndpoint } from './schemas';
+import type * as t from './types';
 import * as q from './types/queries';
 import { ResourceType } from './accessPermissions';
 
@@ -453,3 +454,34 @@ export const deeplDownload = () => `${BASE_URL}/api/deepl/download`;
 
 /* SDG */
 export const sdg = () => `${BASE_URL}/api/sdg`;
+
+/* Admin Panel */
+const adminPanelRoot = `${BASE_URL}/api/admin/panel`;
+
+export const adminModeration = (params: t.AdminModerationQuery = {}) =>
+  `${adminPanelRoot}/moderation${buildQuery(params)}`;
+
+export const adminUsers = (params: t.AdminUsersListQuery = {}) =>
+  `${adminPanelRoot}/users${buildQuery(params)}`;
+
+export const adminUserBan = (userId: string) =>
+  `${adminPanelRoot}/users/${encodeURIComponent(userId)}/ban`;
+
+export const adminUserUnban = (userId: string) =>
+  `${adminPanelRoot}/users/${encodeURIComponent(userId)}/unban`;
+
+export const adminUserResetPassword = (userId: string) =>
+  `${adminPanelRoot}/users/${encodeURIComponent(userId)}/reset-password`;
+
+export const adminUserDelete = (userId: string) =>
+  `${adminPanelRoot}/users/${encodeURIComponent(userId)}`;
+
+export const adminAnalyticsUsers = (params: t.AdminAnalyticsUsersQuery = {}) =>
+  `${adminPanelRoot}/analytics/users${buildQuery(params)}`;
+
+export const adminFileRetention = () => `${adminPanelRoot}/analytics/file-retention`;
+
+export const adminFileRetentionPurge = () => `${adminPanelRoot}/analytics/file-retention/purge`;
+
+export const adminDeepLJobs = (params: t.AdminDeepLJobsQuery = {}) =>
+  `${adminPanelRoot}/analytics/deepl-jobs${buildQuery(params)}`;

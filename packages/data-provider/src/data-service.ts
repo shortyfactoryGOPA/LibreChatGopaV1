@@ -1115,3 +1115,63 @@ export function mapSDG(data: FormData, signal?: AbortSignal | null): Promise<t.S
   const requestConfig = signal ? { signal } : undefined;
   return request.postMultiPart(endpoints.sdg(), data, requestConfig);
 }
+
+/* Admin Panel */
+export function getAdminModeration(
+  params?: t.AdminModerationQuery,
+): Promise<t.AdminModerationResponse> {
+  return request.get(endpoints.adminModeration(params));
+}
+
+export function getAdminUsers(params?: t.AdminUsersListQuery): Promise<t.AdminUsersResponse> {
+  return request.get(endpoints.adminUsers(params));
+}
+
+export function banAdminUser(payload: t.AdminBanUserRequest): Promise<t.AdminBanUserResponse> {
+  const { userId, durationMinutes } = payload;
+  return request.post(endpoints.adminUserBan(userId), { durationMinutes });
+}
+
+export function unbanAdminUser(
+  payload: t.AdminUnbanUserRequest,
+): Promise<t.AdminUnbanUserResponse> {
+  return request.post(endpoints.adminUserUnban(payload.userId));
+}
+
+export function resetAdminUserPassword(
+  payload: t.AdminResetPasswordRequest,
+): Promise<t.AdminResetPasswordResponse> {
+  return request.post(endpoints.adminUserResetPassword(payload.userId));
+}
+
+export function deleteAdminUser(
+  payload: t.AdminDeleteUserRequest,
+): Promise<t.AdminDeleteUserResponse> {
+  return request.delete(endpoints.adminUserDelete(payload.userId));
+}
+
+export function getAdminAnalyticsUsers(
+  params?: t.AdminAnalyticsUsersQuery,
+): Promise<t.AdminAnalyticsUsersResponse> {
+  return request.get(endpoints.adminAnalyticsUsers(params));
+}
+
+export function getAdminFileRetention(): Promise<t.AdminFileRetentionResponse> {
+  return request.get(endpoints.adminFileRetention());
+}
+
+export function updateAdminFileRetention(
+  payload: t.AdminFileRetentionUpdateInput,
+): Promise<t.AdminFileRetentionUpdateResponse> {
+  return request.patch(endpoints.adminFileRetention(), payload);
+}
+
+export function purgeAdminFileRetention(): Promise<t.AdminFileRetentionPurgeResponse> {
+  return request.post(endpoints.adminFileRetentionPurge());
+}
+
+export function getAdminDeepLJobs(
+  params?: t.AdminDeepLJobsQuery,
+): Promise<t.AdminDeepLJobsResponse> {
+  return request.get(endpoints.adminDeepLJobs(params));
+}
