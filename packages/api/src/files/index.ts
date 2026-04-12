@@ -11,3 +11,4 @@ export * from './parse';
 export * from './rag';
 export * from './validation';
 export * from './text';
+export * from './sdg';
