@@ -99,15 +99,61 @@ function Login() {
   }
 
   return (
-    <>
-      {error != null && <ErrorMessage>{localize(getLoginError(error))}</ErrorMessage>}
-      {startupConfig?.emailLoginEnabled === true && (
-        <LoginForm
-          onSubmit={login}
-          startupConfig={startupConfig}
-          error={error}
-          setError={setError}
+    <div className="flex w-full flex-col items-center gap-4 text-gray-900 dark:text-white">
+      <div className="w-full text-center">
+        <h1 className="text-3xl font-semibold">GOPA AI Chatbot</h1>
+      </div>
+      <div className="w-full overflow-hidden rounded-md border border-gray-200 shadow-sm dark:border-gray-700">
+        <img
+          src="/assets/chatbot-ui-logo.png"
+          alt="GOPA AI Chatbot visual"
+          className="h-auto w-full object-contain"
         />
+      </div>
+      <section className="w-full rounded-md border border-border-light bg-white px-5 py-4 shadow-sm dark:bg-gray-900/70">
+        <div className="flex items-start gap-3">
+          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full border border-amber-400 bg-amber-50/80 text-amber-500 shadow-[0_0_0_4px_rgba(251,191,36,0.12)] dark:border-amber-500 dark:bg-amber-500/10 dark:text-amber-300">
+            <span aria-hidden="true" className="font-serif text-3xl italic leading-none tracking-tight">
+              i
+            </span>
+          </div>
+          <p className="text-[15px] leading-9 text-gray-800 dark:text-gray-100">
+            {'I confirm that I have completed the '}
+            <a
+              className="font-semibold text-amber-500 underline underline-offset-4 transition-colors hover:text-amber-600 dark:text-amber-400 dark:hover:text-amber-300"
+              href="https://gopagroup.sharepoint.com/sites/Academy/SitePages/GOPA-Group-AI-Chatbot.aspx"
+              target="_blank"
+              rel="noreferrer"
+            >
+              GOPA AI Training
+            </a>
+            {' and that I have read and agree with the '}
+            <a
+              className="font-semibold text-amber-500 underline underline-offset-4 transition-colors hover:text-amber-600 dark:text-amber-400 dark:hover:text-amber-300"
+              href="https://gopagroup.sharepoint.com/sites/GOPAGroup-LearningPlatform/SiteAssets/Forms/AllItems.aspx?id=%2Fsites%2FGOPAGroup%2DLearningPlatform%2FSiteAssets%2FSitePages%2FGOPA%2DGroup%2DAI%2DChatbot%2FGOPA%2DGroup%5FPolicy%2Don%2Dthe%2DUse%2Dof%2DGenerative%2DAI%2Epdf&parent=%2Fsites%2FGOPAGroup%2DLearningPlatform%2FSiteAssets%2FSitePages%2FGOPA%2DGroup%2DAI%2DChatbot"
+              target="_blank"
+              rel="noreferrer"
+            >
+              GOPA Group Policy on the Use of Generative AI
+            </a>
+            {'. I acknowledge the importance of adhering to these guidelines to maintain the integrity and effectiveness of our GOPA AI Chatbot.'}
+          </p>
+        </div>
+      </section>
+      {error != null && (
+        <div className="w-full">
+          <ErrorMessage>{localize(getLoginError(error))}</ErrorMessage>
+        </div>
+      )}
+      {startupConfig?.emailLoginEnabled === true && (
+        <div className="w-full">
+          <LoginForm
+            onSubmit={login}
+            startupConfig={startupConfig}
+            error={error}
+            setError={setError}
+          />
+        </div>
       )}
       {startupConfig?.registrationEnabled === true && (
         <p className="my-4 text-center text-sm font-light text-gray-700 dark:text-white">
@@ -115,13 +161,13 @@ function Login() {
           {localize('com_auth_no_account')}{' '}
           <a
             href={registerPage()}
-            className="inline-flex p-1 text-sm font-medium text-green-600 underline decoration-transparent transition-all duration-200 hover:text-green-700 hover:decoration-green-700 focus:text-green-700 focus:decoration-green-700 dark:text-green-500 dark:hover:text-green-400 dark:hover:decoration-green-400 dark:focus:text-green-400 dark:focus:decoration-green-400"
+            className="inline-flex p-1 text-sm font-medium text-amber-600 underline decoration-transparent transition-all duration-200 hover:text-amber-700 hover:decoration-amber-700 focus:text-amber-700 focus:decoration-amber-700 dark:text-amber-400 dark:hover:text-amber-300 dark:hover:decoration-amber-300 dark:focus:text-amber-300 dark:focus:decoration-amber-300"
           >
             {localize('com_auth_sign_up')}
           </a>
         </p>
       )}
-    </>
+    </div>
   );
 }
 

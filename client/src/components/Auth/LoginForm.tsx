@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Turnstile } from '@marsidev/react-turnstile';
 import { ThemeContext, Spinner, Button, isDark } from '@librechat/client';
@@ -24,6 +24,8 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<TLoginUser>();
+  const [acceptedTerms, setAcceptedTerms] = useState<boolean>(false);
+  const [termsError, setTermsError] = useState<string | null>(null);
   const [showResendLink, setShowResendLink] = useState<boolean>(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
@@ -31,6 +33,12 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
   const useUsernameLogin = config?.ldap?.username;
   const validTheme = isDark(theme) ? 'dark' : 'light';
   const requireCaptcha = Boolean(startupConfig.turnstile?.siteKey);
+
+  useEffect(() => {
+    if (acceptedTerms && termsError != null) {
+      setTermsError(null);
+    }
+  }, [acceptedTerms, termsError]);
 
   useEffect(() => {
     if (error && error.includes('422') && !showResendLink) {
@@ -85,7 +93,14 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
         className="mt-6"
         aria-label="Login form"
         method="POST"
-        onSubmit={handleSubmit((data) => onSubmit(data))}
+        onSubmit={handleSubmit((data) => {
+          if (!acceptedTerms) {
+            setTermsError(localize('com_auth_accept_terms_required'));
+            return;
+          }
+          setTermsError(null);
+          onSubmit(data);
+        })}
       >
         <div className="mb-4">
           <div className="relative">
@@ -168,12 +183,38 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
           </div>
         )}
 
+        <div className="mb-4 rounded-2xl border border-border-light bg-surface-primary px-4 py-3">
+          <div className="flex items-start gap-3">
+            <input
+              id="accept-terms-email-login"
+              type="checkbox"
+              className="mt-0.5 h-4 w-4 rounded border-border-light text-green-600 focus:ring-green-500"
+              checked={acceptedTerms}
+              onChange={(event) => setAcceptedTerms(event.target.checked)}
+            />
+            <div className="space-y-1">
+              <label
+                htmlFor="accept-terms-email-login"
+                className="block text-sm font-medium text-text-primary"
+              >
+                {localize('com_auth_accept_terms_label')}
+              </label>
+              <p className="text-xs text-text-secondary-alt">
+                {localize('com_auth_accept_terms_description')}
+              </p>
+            </div>
+          </div>
+          {termsError != null && (
+            <p className="mt-2 text-sm text-red-600 dark:text-red-400">{termsError}</p>
+          )}
+        </div>
+
         <div className="mt-6">
           <Button
             aria-label={localize('com_auth_continue')}
             data-testid="login-button"
             type="submit"
-            disabled={(requireCaptcha && !turnstileToken) || isSubmitting}
+            disabled={!acceptedTerms || (requireCaptcha && !turnstileToken) || isSubmitting}
             variant="submit"
             className="h-12 w-full rounded-2xl"
           >
