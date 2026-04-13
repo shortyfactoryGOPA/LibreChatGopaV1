@@ -1,5 +1,7 @@
 const crypto = require('crypto');
+const getStream = require('get-stream');
 const fetch = require('node-fetch');
+const { OpenAI, toFile } = require('openai');
 const { logger } = require('@librechat/data-schemas');
 const {
   countTokens,
@@ -21,6 +23,7 @@ const {
   isParamEndpoint,
   isAgentsEndpoint,
   isEphemeralAgentId,
+  mapModelToAzureConfig,
   supportsBalanceCheck,
   isBedrockDocumentType,
   getEndpointFileConfig,
@@ -29,6 +32,73 @@ const { getStrategyFunctions } = require('~/server/services/Files/strategies');
 const { logViolation } = require('~/cache');
 const TextStream = require('./TextStream');
 const db = require('~/models');
+
+/**
+ * Uploads PDF attachments to Azure Files API and returns input_file blocks with file_id.
+ * Required because Azure Responses API does not support inline base64 `file_data`.
+ */
+async function uploadDocumentsToAzure({ req, attachments, model }) {
+  const azureConfig = req?.config?.endpoints?.[EModelEndpoint.azureOpenAI];
+  if (!azureConfig?.modelGroupMap || !azureConfig?.groupMap) {
+    return { documents: [], files: [] };
+  }
+
+  let azureOptions;
+  try {
+    ({ azureOptions } = mapModelToAzureConfig({
+      modelName: model,
+      modelGroupMap: azureConfig.modelGroupMap,
+      groupMap: azureConfig.groupMap,
+    }));
+  } catch (err) {
+    logger.error('[uploadDocumentsToAzure] Failed to resolve Azure config:', err.message);
+    return { documents: [], files: [] };
+  }
+
+  const openai = new OpenAI({
+    apiKey: azureOptions.azureOpenAIApiKey,
+    baseURL: `https://${azureOptions.azureOpenAIApiInstanceName}.openai.azure.com/openai`,
+    defaultQuery: { 'api-version': azureOptions.azureOpenAIApiVersion },
+    defaultHeaders: { 'api-key': azureOptions.azureOpenAIApiKey },
+  });
+
+  const documents = [];
+  const files = [];
+  const encodingMethods = {};
+
+  for (const attachment of attachments) {
+    if (!attachment.filepath) continue;
+    const source = attachment.source ?? FileSources.local;
+    if (!encodingMethods[source]) {
+      encodingMethods[source] = getStrategyFunctions(source);
+    }
+    try {
+      const stream = await encodingMethods[source].getDownloadStream(req, attachment.filepath);
+      const buffer = await getStream.buffer(stream);
+      if (!buffer.length) continue;
+
+      const uploadable = await toFile(buffer, attachment.filename ?? 'document.pdf', {
+        type: attachment.type ?? 'application/pdf',
+      });
+      const uploaded = await openai.files.create({ file: uploadable, purpose: 'assistants' });
+      logger.debug(`[uploadDocumentsToAzure] Uploaded ${attachment.filename} → ${uploaded.id}`);
+
+      documents.push({ type: 'input_file', file_id: uploaded.id });
+      files.push({
+        file_id: attachment.file_id,
+        temp_file_id: attachment.temp_file_id,
+        filepath: attachment.filepath,
+        source: attachment.source,
+        filename: attachment.filename,
+        type: attachment.type,
+      });
+    } catch (err) {
+      logger.error(`[uploadDocumentsToAzure] Failed to upload ${attachment.filename}:`, err.message);
+    }
+  }
+
+  return { documents, files };
+}
 
 class BaseClient {
   constructor(apiKey, options = {}) {
@@ -1086,13 +1156,29 @@ class BaseClient {
   }
 
   async addDocuments(message, attachments) {
+    const provider = this.options.agent?.provider ?? this.options.endpoint;
+    const useResponsesApi =
+      this.options.agent?.model_parameters?.useResponsesApi ??
+      this.options.model_parameters?.useResponsesApi;
+
+    // Azure Responses API rejects inline base64 file_data — must upload first and reference by file_id
+    if (provider === EModelEndpoint.azureOpenAI && useResponsesApi) {
+      const result = await uploadDocumentsToAzure({
+        req: this.options.req,
+        attachments,
+        model: this.modelOptions?.model ?? this.model,
+      });
+      message.documents = result.documents.length ? result.documents : undefined;
+      return result.files;
+    }
+
     const documentResult = await encodeAndFormatDocuments(
       this.options.req,
       attachments,
       {
-        provider: this.options.agent?.provider ?? this.options.endpoint,
+        provider,
         endpoint: this.options.agent?.endpoint ?? this.options.endpoint,
-        useResponsesApi: this.options.agent?.model_parameters?.useResponsesApi ?? this.options.model_parameters?.useResponsesApi,
+        useResponsesApi,
         model: this.modelOptions?.model ?? this.model,
       },
       getStrategyFunctions,
