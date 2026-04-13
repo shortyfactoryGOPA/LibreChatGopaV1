@@ -101,6 +101,11 @@ interface:
     roles: true
   marketplace:
     use: false
+  mcpServers:
+    use: false
+    create: false
+    share: false
+    public: false
   fileCitations: true
   # Remote Agents configuration
   # Controls user permissions for remote agents with external API support
@@ -555,3 +560,4 @@ memory:
     model: "gpt-5.4"
     model_parameters:
       temperature: 0.2
+      useResponsesApi: true
