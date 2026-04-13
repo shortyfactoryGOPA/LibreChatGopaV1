@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   GoogleIcon,
   FacebookIcon,
@@ -7,12 +8,9 @@ import {
   AppleIcon,
   SamlIcon,
 } from '@librechat/client';
-
+import type { TStartupConfig } from 'librechat-data-provider';
 import SocialButton from './SocialButton';
-
 import { useLocalize } from '~/hooks';
-
-import { TStartupConfig } from 'librechat-data-provider';
 
 function SocialLoginRender({
   startupConfig,
@@ -20,10 +18,21 @@ function SocialLoginRender({
   startupConfig: TStartupConfig | null | undefined;
 }) {
   const localize = useLocalize();
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   if (!startupConfig) {
     return null;
   }
+
+  const showTermsCheckbox =
+    startupConfig.openidLoginEnabled && startupConfig.socialLogins?.includes('openid');
+  const isStandaloneSocialLogin = startupConfig.emailLoginEnabled !== true;
+  const socialSectionClassName = isStandaloneSocialLogin ? 'mt-6' : '';
+  const termsCardClassName = [
+    'rounded-2xl border border-border-light bg-surface-primary px-4 py-3',
+    isStandaloneSocialLogin ? 'mb-6' : 'mb-4',
+  ].join(' ');
+  const providerListClassName = isStandaloneSocialLogin ? 'mt-4' : 'mt-2';
 
   const providerComponents = {
     discord: startupConfig.discordLoginEnabled && (
@@ -96,6 +105,7 @@ function SocialLoginRender({
         }
         label={startupConfig.openidLabel}
         id="openid"
+        disabled={showTermsCheckbox && !acceptedTerms}
       />
     ),
     saml: startupConfig.samlLoginEnabled && (
@@ -119,21 +129,45 @@ function SocialLoginRender({
 
   return (
     startupConfig.socialLoginEnabled && (
-      <>
+      <div className={socialSectionClassName}>
         {startupConfig.emailLoginEnabled && (
           <>
             <div className="relative mt-6 flex w-full items-center justify-center border border-t border-gray-300 uppercase dark:border-gray-600">
               <div className="absolute bg-white px-3 text-xs text-black dark:bg-gray-900 dark:text-white">
-                Or
+                {localize('com_ui_or')}
               </div>
             </div>
             <div className="mt-8" />
           </>
         )}
-        <div className="mt-2">
+        {showTermsCheckbox && (
+          <div className={termsCardClassName}>
+            <div className="flex items-start gap-3">
+              <input
+                id="accept-terms-openid-login"
+                type="checkbox"
+                className="mt-0.5 h-4 w-4 rounded border-border-light text-green-600 focus:ring-green-500"
+                checked={acceptedTerms}
+                onChange={(event) => setAcceptedTerms(event.target.checked)}
+              />
+              <div className="space-y-1">
+                <label
+                  htmlFor="accept-terms-openid-login"
+                  className="block text-sm font-medium text-text-primary"
+                >
+                  {localize('com_auth_accept_terms_label')}
+                </label>
+                <p className="text-xs text-text-secondary-alt">
+                  {localize('com_auth_accept_terms_description')}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+        <div className={providerListClassName}>
           {startupConfig.socialLogins?.map((provider) => providerComponents[provider] || null)}
         </div>
-      </>
+      </div>
     )
   );
 }
