@@ -1157,12 +1157,14 @@ class BaseClient {
 
   async addDocuments(message, attachments) {
     const provider = this.options.agent?.provider ?? this.options.endpoint;
+    const endpoint = this.options.endpoint;
     const useResponsesApi =
       this.options.agent?.model_parameters?.useResponsesApi ??
       this.options.model_parameters?.useResponsesApi;
 
-    // Azure Responses API rejects inline base64 file_data — must upload first and reference by file_id
-    if (provider === EModelEndpoint.azureOpenAI && useResponsesApi) {
+    // Azure Responses API rejects inline base64 file_data — must upload first and reference by file_id.
+    // Use `endpoint` (not `provider`) because the ephemeral agent sets provider='openAI' for Azure.
+    if (endpoint === EModelEndpoint.azureOpenAI && useResponsesApi) {
       const result = await uploadDocumentsToAzure({
         req: this.options.req,
         attachments,
