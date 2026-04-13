@@ -150,6 +150,9 @@ export default function useMentions({
     });
   }, [startupConfig, agentsMap]);
 
+  const enforceModelSpecs =
+    (startupConfig?.modelSpecs?.enforce === true) && modelSpecs.length > 0;
+
   const options: MentionOption[] = useMemo(() => {
     let validEndpoints = endpoints;
     if (!includeAssistants) {
@@ -195,7 +198,7 @@ export default function useMentions({
         }),
         type: 'modelSpec' as const,
       })),
-      ...(interfaceConfig.modelSelect === true ? validEndpoints : []).map((endpoint) => ({
+      ...(!enforceModelSpecs && interfaceConfig.modelSelect === true ? validEndpoints : []).map((endpoint) => ({
         value: endpoint,
         label: alternateName[endpoint as string] ?? endpoint ?? '',
         type: 'endpoint' as const,
@@ -234,7 +237,7 @@ export default function useMentions({
         }),
         type: 'preset' as const,
       })) ?? []),
-      ...modelOptions,
+      ...(!enforceModelSpecs ? modelOptions : []),
     ];
 
     return mentions;
@@ -248,6 +251,7 @@ export default function useMentions({
     endpointsConfig,
     assistantListMap,
     includeAssistants,
+    enforceModelSpecs,
     interfaceConfig.presets,
     interfaceConfig.modelSelect,
   ]);
