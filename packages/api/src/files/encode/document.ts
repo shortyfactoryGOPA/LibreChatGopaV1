@@ -113,7 +113,7 @@ export async function encodeAndFormatDocuments(
   const isBedrock = provider === Providers.BEDROCK;
   const isDocSupported = isDocumentSupportedProvider(provider);
 
-  if (!isDocSupported && !isBedrock) {
+  if (!isDocSupported && !isBedrock && !useResponsesApi) {
     return result;
   }
 
@@ -181,7 +181,7 @@ export async function encodeAndFormatDocuments(
         },
       });
       result.files.push(metadata);
-    } else if (file.type === 'application/pdf' && isDocSupported) {
+    } else if (file.type === 'application/pdf' && (isDocSupported || useResponsesApi)) {
       const pdfBuffer = Buffer.from(content, 'base64');
 
       const validation = await validatePdf(
@@ -207,7 +207,7 @@ export async function encodeAndFormatDocuments(
         result.documents.push(block);
         result.files.push(metadata);
       }
-    } else if (isDocSupported && !isBedrock) {
+    } else if ((isDocSupported || useResponsesApi) && !isBedrock) {
       const paddingChars = content.endsWith('==') ? 2 : content.endsWith('=') ? 1 : 0;
       const decodedByteCount = Math.floor((content.length * 3) / 4) - paddingChars;
       if (configuredFileSizeLimit && decodedByteCount > configuredFileSizeLimit) {
