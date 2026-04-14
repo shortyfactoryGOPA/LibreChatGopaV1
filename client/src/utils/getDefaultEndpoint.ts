@@ -4,6 +4,7 @@ import type {
   EModelEndpoint,
   TEndpointsConfig,
 } from 'librechat-data-provider';
+import { resolveAssistantsConfigEndpoint } from 'librechat-data-provider';
 import { getLocalStorageItems } from './localStorage';
 import { mapEndpoints } from './endpoints';
 
@@ -17,7 +18,8 @@ const getEndpointFromSetup = (
 ): EModelEndpoint | null => {
   let { endpoint: targetEndpoint = '' } = convoSetup || {};
   targetEndpoint = targetEndpoint ?? '';
-  if (targetEndpoint && endpointsConfig?.[targetEndpoint]) {
+  const configEndpoint = resolveAssistantsConfigEndpoint(targetEndpoint);
+  if (targetEndpoint && endpointsConfig?.[configEndpoint]) {
     return targetEndpoint as EModelEndpoint;
   } else if (targetEndpoint) {
     console.warn(`Illegal target endpoint ${targetEndpoint}`, endpointsConfig);

@@ -376,6 +376,8 @@ export type TConfig = {
   userProvide?: boolean | null;
   userProvideURL?: boolean | null;
   disableBuilder?: boolean;
+  enableNewAssistants?: boolean;
+  enableOldAssistants?: boolean;
   retrievalModels?: string[];
   capabilities?: string[];
   customParams?: {

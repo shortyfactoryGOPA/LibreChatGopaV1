@@ -1,7 +1,14 @@
 import { z } from 'zod';
 import type { ZodError } from 'zod';
 import type { TEndpointsConfig, TModelsConfig, TConfig } from './types';
-import { EModelEndpoint, eModelEndpointSchema, isAgentsEndpoint } from './schemas';
+import {
+  EModelEndpoint,
+  eModelEndpointSchema,
+  isAgentsEndpoint,
+  AzureAssistantsNewEndpoint,
+  AzureAssistantsOldEndpoint,
+} from './schemas';
+import type { AssistantsEndpoint } from './schemas';
 import { ComponentTypes, SettingTypes, OptionTypes } from './generate';
 import { specsConfigSchema, TSpecsConfig } from './models';
 import { fileConfigSchema } from './file-config';
@@ -232,6 +239,8 @@ export enum AgentCapabilities {
 export const defaultAssistantsVersion = {
   [EModelEndpoint.assistants]: 2,
   [EModelEndpoint.azureAssistants]: 1,
+  [AzureAssistantsNewEndpoint]: 1,
+  [AzureAssistantsOldEndpoint]: 1,
 };
 
 export const baseEndpointSchema = z.object({
@@ -271,6 +280,8 @@ export const assistantEndpointSchema = baseEndpointSchema.merge(
   z.object({
     /* assistants specific */
     disableBuilder: z.boolean().optional(),
+    enableNewAssistants: z.boolean().optional(),
+    enableOldAssistants: z.boolean().optional(),
     pollIntervalMs: z.number().optional(),
     timeoutMs: z.number().optional(),
     version: z.union([z.string(), z.number()]).default(2),
@@ -1182,11 +1193,13 @@ export const defaultEndpoints: EModelEndpoint[] = [
   EModelEndpoint.bedrock,
 ];
 
-export const alternateName = {
+export const alternateName: Record<string, string> = {
   [EModelEndpoint.openAI]: 'OpenAI',
   [EModelEndpoint.assistants]: 'Assistants',
   [EModelEndpoint.agents]: 'My Agents',
   [EModelEndpoint.azureAssistants]: 'Azure Assistants',
+  [AzureAssistantsNewEndpoint]: 'Azure AI Foundry',
+  [AzureAssistantsOldEndpoint]: 'Azure Assistants (Legacy)',
   [EModelEndpoint.azureOpenAI]: 'Azure OpenAI',
   [EModelEndpoint.google]: 'Google',
   [EModelEndpoint.anthropic]: 'Anthropic',
@@ -1340,6 +1353,8 @@ export const initialModelsConfig: TModelsConfig = {
 export const EndpointURLs = {
   [EModelEndpoint.assistants]: `${apiBaseUrl()}/api/assistants/v2/chat`,
   [EModelEndpoint.azureAssistants]: `${apiBaseUrl()}/api/assistants/v1/chat`,
+  [AzureAssistantsNewEndpoint]: `${apiBaseUrl()}/api/assistants/v1/chat`,
+  [AzureAssistantsOldEndpoint]: `${apiBaseUrl()}/api/assistants/v1/chat`,
   [EModelEndpoint.agents]: `${apiBaseUrl()}/api/${EModelEndpoint.agents}/chat`,
 } as const;
 
@@ -2070,4 +2085,32 @@ export function getDefaultParamsEndpoint(
     return undefined;
   }
   return endpointsConfig[endpoint]?.customParams?.defaultParamsEndpoint;
+}
+
+export function isAzureAssistantsVariantEnabled(
+  endpointsConfig: TEndpointsConfig | undefined | null,
+  endpoint: AssistantsEndpoint | string | null | undefined,
+): boolean {
+  if (
+    endpoint !== EModelEndpoint.azureAssistants &&
+    endpoint !== AzureAssistantsNewEndpoint &&
+    endpoint !== AzureAssistantsOldEndpoint
+  ) {
+    return true;
+  }
+
+  const config = endpointsConfig?.[EModelEndpoint.azureAssistants];
+  if (!config) {
+    return false;
+  }
+
+  if (endpoint === AzureAssistantsNewEndpoint) {
+    return config.enableNewAssistants !== false;
+  }
+
+  if (endpoint === AzureAssistantsOldEndpoint) {
+    return config.enableOldAssistants !== false;
+  }
+
+  return config.enableNewAssistants !== false || config.enableOldAssistants !== false;
 }

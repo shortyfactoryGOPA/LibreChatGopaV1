@@ -159,9 +159,9 @@ const useNewConvo = (index = 0) => {
           const isAssistantEndpoint = isAssistantsEndpoint(defaultEndpoint);
           const assistants: AssistantListItem[] = assistantsListMap[defaultEndpoint] ?? [];
           const currentAssistantId = conversation.assistant_id ?? '';
-          const currentAssistant = assistantsListMap[defaultEndpoint]?.[currentAssistantId] as
-            | AssistantListItem
-            | undefined;
+          const currentAssistant = (assistantsListMap[defaultEndpoint] ?? []).find(
+            (a) => a.id === currentAssistantId,
+          );
 
           if (currentAssistantId && !currentAssistant) {
             conversation.assistant_id = undefined;
