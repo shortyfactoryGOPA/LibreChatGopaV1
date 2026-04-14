@@ -13,7 +13,7 @@ import {
 import type { TPreset } from 'librechat-data-provider';
 import { SaveAsPresetDialog } from '~/components/Endpoints';
 import { useSetIndexOptions, useLocalize } from '~/hooks';
-import { useGetEndpointsQuery } from '~/data-provider';
+import { useGetEndpointsQuery, useGetPresetsQuery } from '~/data-provider';
 import { componentMapping } from './components';
 import { useChatContext } from '~/Providers';
 import { logger } from '~/utils';
@@ -29,6 +29,7 @@ export default function Parameters() {
   const activePresetId = useRecoilValue(store.activePresetId);
 
   const { data: endpointsConfig = {} } = useGetEndpointsQuery();
+  const { data: presets = [] } = useGetPresetsQuery();
   const provider = conversation?.endpoint ?? '';
   const model = conversation?.model ?? '';
 
@@ -138,10 +139,14 @@ export default function Parameters() {
     }) as TPreset;
     if (activePresetId) {
       newPreset.presetId = activePresetId;
+      const activePreset = presets.find((p) => p.presetId === activePresetId);
+      if (activePreset?.title) {
+        newPreset.title = activePreset.title;
+      }
     }
     setPreset(newPreset);
     setIsDialogOpen(true);
-  }, [conversation, activePresetId]);
+  }, [conversation, activePresetId, presets]);
 
   if (!parameters) {
     return null;
