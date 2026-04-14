@@ -1,5 +1,6 @@
 import debounce from 'lodash/debounce';
 import React, { createContext, useContext, useState, useMemo, useCallback } from 'react';
+import { useSetRecoilState } from 'recoil';
 import { EModelEndpoint, isAgentsEndpoint, isAssistantsEndpoint } from 'librechat-data-provider';
 import type * as t from 'librechat-data-provider';
 import type { Endpoint, SelectedValues } from '~/common';
@@ -15,6 +16,7 @@ import { useGetEndpointsQuery, useGetPresetsQuery, useListAgentsQuery } from '~/
 import { useModelSelectorChatContext } from './ModelSelectorChatContext';
 import useSelectMention from '~/hooks/Input/useSelectMention';
 import { filterItems } from './utils';
+import store from '~/store';
 
 type ModelSelectorContextType = {
   // State
@@ -123,6 +125,7 @@ export function ModelSelectorProvider({ children, startupConfig }: ModelSelector
   );
 
   const { data: presets = [] } = useGetPresetsQuery();
+  const setActivePresetId = useSetRecoilState(store.activePresetId);
 
   const { onSelectEndpoint, onSelectSpec, onSelectPreset } = useSelectMention({
     modelSpecs,
@@ -193,6 +196,7 @@ export function ModelSelectorProvider({ children, startupConfig }: ModelSelector
   const handleSelectPreset = useCallback(
     (preset: t.TPreset) => {
       onSelectPreset?.(preset);
+      setActivePresetId(preset.presetId ?? null);
       setSelectedValues({
         endpoint: preset.endpoint ?? '',
         model: preset.model ?? '',
@@ -200,13 +204,14 @@ export function ModelSelectorProvider({ children, startupConfig }: ModelSelector
         presetTitle: preset.title ?? '',
       });
     },
-    [onSelectPreset],
+    [onSelectPreset, setActivePresetId],
   );
 
   const handleSelectSpec = useCallback(
     (spec: t.TModelSpec) => {
       let model = spec.preset.model ?? null;
       onSelectSpec?.(spec);
+      setActivePresetId(null);
       if (isAgentsEndpoint(spec.preset.endpoint)) {
         model = spec.preset.agent_id ?? '';
       } else if (isAssistantsEndpoint(spec.preset.endpoint)) {
@@ -218,7 +223,7 @@ export function ModelSelectorProvider({ children, startupConfig }: ModelSelector
         modelSpec: spec.name,
       });
     },
-    [onSelectSpec],
+    [onSelectSpec, setActivePresetId],
   );
 
   const handleSelectEndpoint = useCallback(
@@ -227,6 +232,7 @@ export function ModelSelectorProvider({ children, startupConfig }: ModelSelector
         if (endpoint.value) {
           onSelectEndpoint?.(endpoint.value);
         }
+        setActivePresetId(null);
         setSelectedValues({
           endpoint: endpoint.value,
           model: '',
@@ -234,7 +240,7 @@ export function ModelSelectorProvider({ children, startupConfig }: ModelSelector
         });
       }
     },
-    [onSelectEndpoint],
+    [onSelectEndpoint, setActivePresetId],
   );
 
   const handleSelectModel = useCallback(
@@ -252,6 +258,7 @@ export function ModelSelectorProvider({ children, startupConfig }: ModelSelector
       } else if (endpoint.value) {
         onSelectEndpoint?.(endpoint.value, { model });
       }
+      setActivePresetId(null);
       setSelectedValues({
         endpoint: endpoint.value,
         model,
