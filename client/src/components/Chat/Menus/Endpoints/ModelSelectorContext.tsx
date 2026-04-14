@@ -11,7 +11,7 @@ import {
   useLocalize,
 } from '~/hooks';
 import { useAgentsMapContext, useAssistantsMapContext, useLiveAnnouncer } from '~/Providers';
-import { useGetEndpointsQuery, useListAgentsQuery } from '~/data-provider';
+import { useGetEndpointsQuery, useGetPresetsQuery, useListAgentsQuery } from '~/data-provider';
 import { useModelSelectorChatContext } from './ModelSelectorChatContext';
 import useSelectMention from '~/hooks/Input/useSelectMention';
 import { filterItems } from './utils';
@@ -23,6 +23,7 @@ type ModelSelectorContextType = {
   endpointSearchValues: Record<string, string>;
   searchResults: (t.TModelSpec | Endpoint)[] | null;
   // LibreChat
+  presets: t.TPreset[];
   modelSpecs: t.TModelSpec[];
   mappedEndpoints: Endpoint[];
   agentsMap: t.TAgentsMap | undefined;
@@ -34,6 +35,7 @@ type ModelSelectorContextType = {
   setSelectedValues: React.Dispatch<React.SetStateAction<SelectedValues>>;
   setSearchValue: (value: string) => void;
   setEndpointSearchValue: (endpoint: string, value: string) => void;
+  handleSelectPreset: (preset: t.TPreset) => void;
   handleSelectSpec: (spec: t.TModelSpec) => void;
   handleSelectEndpoint: (endpoint: Endpoint) => void;
   handleSelectModel: (endpoint: Endpoint, model: string) => void;
@@ -120,8 +122,9 @@ export function ModelSelectorProvider({ children, startupConfig }: ModelSelector
     [agentsMap],
   );
 
-  const { onSelectEndpoint, onSelectSpec } = useSelectMention({
-    // presets,
+  const { data: presets = [] } = useGetPresetsQuery();
+
+  const { onSelectEndpoint, onSelectSpec, onSelectPreset } = useSelectMention({
     modelSpecs,
     getConversation,
     assistantsMap,
@@ -187,6 +190,18 @@ export function ModelSelectorProvider({ children, startupConfig }: ModelSelector
     }));
   }, []);
 
+  const handleSelectPreset = useCallback(
+    (preset: t.TPreset) => {
+      onSelectPreset?.(preset);
+      setSelectedValues({
+        endpoint: preset.endpoint ?? '',
+        model: preset.model ?? '',
+        modelSpec: '',
+      });
+    },
+    [onSelectPreset],
+  );
+
   const handleSelectSpec = useCallback(
     (spec: t.TModelSpec) => {
       let model = spec.preset.model ?? null;
@@ -251,6 +266,7 @@ export function ModelSelectorProvider({ children, startupConfig }: ModelSelector
 
   const value = useMemo(
     () => ({
+      presets,
       searchValue,
       searchResults,
       selectedValues,
@@ -260,6 +276,7 @@ export function ModelSelectorProvider({ children, startupConfig }: ModelSelector
       assistantsMap,
       mappedEndpoints,
       endpointsConfig,
+      handleSelectPreset,
       handleSelectSpec,
       handleSelectModel,
       setSelectedValues,
@@ -270,6 +287,7 @@ export function ModelSelectorProvider({ children, startupConfig }: ModelSelector
       ...keyProps,
     }),
     [
+      presets,
       searchValue,
       searchResults,
       selectedValues,
@@ -279,6 +297,7 @@ export function ModelSelectorProvider({ children, startupConfig }: ModelSelector
       assistantsMap,
       mappedEndpoints,
       endpointsConfig,
+      handleSelectPreset,
       handleSelectSpec,
       handleSelectModel,
       setSelectedValues,

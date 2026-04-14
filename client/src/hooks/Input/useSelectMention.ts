@@ -311,6 +311,7 @@ export default function useSelectMention({
     return {
       onSelectSpec,
       onSelectEndpoint,
+      onSelectPreset,
     };
   }
 
