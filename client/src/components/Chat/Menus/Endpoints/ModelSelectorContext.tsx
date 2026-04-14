@@ -197,6 +197,7 @@ export function ModelSelectorProvider({ children, startupConfig }: ModelSelector
         endpoint: preset.endpoint ?? '',
         model: preset.model ?? '',
         modelSpec: '',
+        presetTitle: preset.title ?? '',
       });
     },
     [onSelectPreset],
