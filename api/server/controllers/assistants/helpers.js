@@ -113,7 +113,12 @@ const getCurrentVersion = async (req, endpoint) => {
   }
   if (!version && endpoint) {
     const endpointsConfig = await getEndpointsConfig(req);
-    version = `v${endpointsConfig?.[endpoint]?.version ?? defaultAssistantsVersion[endpoint]}`;
+    const configEndpoint = resolveAssistantsConfigEndpoint(endpoint);
+    version = `v${
+      endpointsConfig?.[configEndpoint]?.version ??
+      defaultAssistantsVersion[endpoint] ??
+      defaultAssistantsVersion[configEndpoint]
+    }`;
   }
   if (!version?.startsWith('v') && version.length !== 2) {
     throw new Error(`[${req.baseUrl}] Invalid version: ${version}`);
@@ -327,7 +332,7 @@ const fetchAssistants = async ({ req, res, overrideEndpoint }) => {
 
   if (resolvedEndpoint == null) {
     body = createEmptyAssistantListResponse();
-  } else if (endpoint === EModelEndpoint.assistants) {
+  } else if (resolvedEndpoint === EModelEndpoint.assistants) {
     ({ body } = await listAllAssistants({ req, res, version, query }));
   } else if (resolvedEndpoint === AzureAssistantsNewEndpoint) {
     body = await listFoundryAgents(query);
