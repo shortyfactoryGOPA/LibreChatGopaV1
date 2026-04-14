@@ -8,6 +8,8 @@ import type { AppConfig } from '@librechat/data-schemas';
 import type { AgentCapabilities, TEndpointsConfig, TConfig } from 'librechat-data-provider';
 import type { ServerRequest, TCustomEndpointsConfig } from '~/types';
 import { loadCustomEndpointsConfig as defaultLoadCustomEndpoints } from '~/endpoints/custom';
+import { isFoundryAgentsConfigured } from '~/endpoints/foundryAgents';
+import { getAzureAssistantsVariantAvailability } from '~/endpoints/azureAssistants';
 
 type PartialEndpointEntry = Partial<TConfig>;
 type DefaultEndpointsResult = Record<string, PartialEndpointEntry | false | null>;
@@ -49,6 +51,11 @@ export function createEndpointsConfigService(deps: EndpointsConfigDeps) {
       mergedConfig[EModelEndpoint.azureAssistants] = { userProvide: false };
     }
 
+    if (isFoundryAgentsConfigured() && !mergedConfig[EModelEndpoint.azureAssistants]) {
+      const { enableNewAssistants, enableOldAssistants } = getAzureAssistantsVariantAvailability();
+      mergedConfig[EModelEndpoint.azureAssistants] = { userProvide: false, enableNewAssistants, enableOldAssistants };
+    }
+
     if (
       mergedConfig[EModelEndpoint.assistants] &&
       appConfig?.endpoints?.[EModelEndpoint.assistants]
@@ -79,14 +86,17 @@ export function createEndpointsConfigService(deps: EndpointsConfigDeps) {
       mergedConfig[EModelEndpoint.azureAssistants] &&
       appConfig?.endpoints?.[EModelEndpoint.azureAssistants]
     ) {
-      const { disableBuilder, retrievalModels, capabilities, version } =
+      const { disableBuilder, retrievalModels, capabilities, version, enableNewAssistants, enableOldAssistants } =
         appConfig.endpoints[EModelEndpoint.azureAssistants];
+      const envAvailability = getAzureAssistantsVariantAvailability();
       mergedConfig[EModelEndpoint.azureAssistants] = {
         ...mergedConfig[EModelEndpoint.azureAssistants],
         version: version != null ? String(version) : undefined,
         retrievalModels,
         disableBuilder,
         capabilities,
+        enableNewAssistants: enableNewAssistants ?? envAvailability.enableNewAssistants,
+        enableOldAssistants: enableOldAssistants ?? envAvailability.enableOldAssistants,
       };
     }
 

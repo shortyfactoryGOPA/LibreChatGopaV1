@@ -6,6 +6,9 @@ const {
   refreshS3FileUrls,
   resolveUploadErrorMessage,
   verifyAgentUploadPermission,
+  isFoundryAgentsConfigured,
+  getFoundryFileInfo,
+  getFoundryFileArrayBuffer,
 } = require('@librechat/api');
 const {
   Time,
@@ -302,6 +305,29 @@ router.get('/code/download/:session_id/:fileId', async (req, res) => {
   }
 });
 
+const tryFoundryFileDownload = async ({ file, file_id, res }) => {
+  if (file.source !== FileSources.azure || !isFoundryAgentsConfigured()) {
+    return false;
+  }
+
+  try {
+    const foundryFileInfo = await getFoundryFileInfo(file_id);
+    const resolvedFoundryFileId = foundryFileInfo?.id ?? file_id;
+    const arrayBuffer = await getFoundryFileArrayBuffer(resolvedFoundryFileId);
+    const cleanedFilename = cleanFileName(foundryFileInfo?.filename ?? file.filename);
+
+    res.setHeader('Content-Disposition', `attachment; filename="${cleanedFilename}"`);
+    res.setHeader('Content-Type', file.type || 'application/octet-stream');
+    Readable.from(Buffer.from(arrayBuffer)).pipe(res);
+    return true;
+  } catch (error) {
+    logger.warn(
+      `[DOWNLOAD ROUTE] Foundry download failed for ${file_id}, falling back to legacy Azure route: ${error.message}`,
+    );
+    return false;
+  }
+};
+
 router.get('/download/:userId/:file_id', fileAccess, async (req, res) => {
   try {
     const { userId, file_id } = req.params;
@@ -372,6 +398,12 @@ router.get('/download/:userId/:file_id', fileAccess, async (req, res) => {
     };
 
     if (checkOpenAIStorage(file.source)) {
+      if (file.source === FileSources.azure) {
+        const foundryHandled = await tryFoundryFileDownload({ file, file_id, res });
+        if (foundryHandled) {
+          return;
+        }
+      }
       req.body = { model: file.model };
       const endpointMap = {
         [FileSources.openai]: EModelEndpoint.assistants,

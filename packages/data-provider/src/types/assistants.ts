@@ -77,6 +77,7 @@ export interface FileSearchResource {
    * the assistant.
    */
   vector_store_ids?: Array<string>;
+  file_ids?: Array<string>;
 }
 
 /* Assistant types */

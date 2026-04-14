@@ -5,6 +5,8 @@ import {
   isAgentsEndpoint,
   defaultOrderQuery,
   defaultAssistantsVersion,
+  isAzureAssistantsVariantEnabled,
+  resolveAssistantsConfigEndpoint,
 } from 'librechat-data-provider';
 import { useQuery, useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import type {
@@ -223,10 +225,12 @@ export const useListAssistantsQuery = <TData = AssistantListResponse>(
   const queryClient = useQueryClient();
   const endpointsConfig = queryClient.getQueryData<TEndpointsConfig>([QueryKeys.endpoints]);
   const keyExpiry = queryClient.getQueryData<TCheckUserKeyResponse>([QueryKeys.name, endpoint]);
-  const userProvidesKey = !!(endpointsConfig?.[endpoint]?.userProvide ?? false);
+  const configEndpoint = resolveAssistantsConfigEndpoint(endpoint);
+  const userProvidesKey = !!(endpointsConfig?.[configEndpoint]?.userProvide ?? false);
   const keyProvided = userProvidesKey ? !!(keyExpiry?.expiresAt ?? '') : true;
-  const enabled = !!endpointsConfig?.[endpoint] && keyProvided;
-  const version = endpointsConfig?.[endpoint]?.version ?? defaultAssistantsVersion[endpoint];
+  const isVariantEnabled = isAzureAssistantsVariantEnabled(endpointsConfig, endpoint);
+  const enabled = !!endpointsConfig?.[configEndpoint] && isVariantEnabled && keyProvided;
+  const version = endpointsConfig?.[configEndpoint]?.version ?? defaultAssistantsVersion[endpoint];
   return useQuery<AssistantListResponse, unknown, TData>(
     [QueryKeys.assistants, endpoint, params],
     () => dataService.listAssistants({ ...params, endpoint }, version),

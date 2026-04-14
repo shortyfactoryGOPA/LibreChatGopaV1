@@ -7,6 +7,7 @@ const {
   checkBalance,
   getBalanceConfig,
   getModelMaxTokens,
+  chatWithFoundryAgent,
 } = require('@librechat/api');
 const {
   Time,
@@ -20,6 +21,8 @@ const {
   ImageVisionTool,
   checkOpenAIStorage,
   AssistantStreamEvents,
+  AzureAssistantsNewEndpoint,
+  AzureAssistantsOldEndpoint,
 } = require('librechat-data-provider');
 const {
   initThread,
@@ -308,6 +311,104 @@ const chatV1 = async (req, res) => {
       );
     };
 
+    if (endpoint === AzureAssistantsNewEndpoint) {
+      await checkBalanceBeforeRun();
+      file_ids = files.map(({ file_id }) => file_id);
+
+      requestMessage = {
+        user: req.user.id,
+        text,
+        messageId: userMessageId,
+        parentMessageId,
+        files,
+        file_ids,
+        conversationId,
+        isCreatedByUser: true,
+        assistant_id,
+        thread_id: _thread_id,
+        model: assistant_id,
+        endpoint,
+      };
+
+      conversation = {
+        conversationId,
+        endpoint,
+        promptPrefix,
+        instructions,
+        assistant_id,
+        ...(file_ids.length ? { file_ids } : {}),
+      };
+
+      const userMessageSave = saveUserMessage(req, { ...requestMessage, model });
+
+      sendEvent(res, {
+        sync: true,
+        conversationId,
+        requestMessage,
+        responseMessage: {
+          user: req.user.id,
+          messageId: responseMessageId,
+          parentMessageId: userMessageId,
+          conversationId,
+          assistant_id,
+          thread_id: _thread_id,
+          model: assistant_id,
+        },
+      });
+
+      const foundryResult = await chatWithFoundryAgent({
+        text,
+        assistantId: assistant_id,
+        threadId: _thread_id,
+        instructions: instructions || null,
+        additionalInstructions: promptPrefix || null,
+        attachments: files.map(({ file_id }) => ({ file_id })),
+      });
+
+      completedRun = true;
+      thread_id = foundryResult.threadId;
+
+      const foundryResponseMessage = {
+        messageId: responseMessageId,
+        text: foundryResult.responseText,
+        parentMessageId: userMessageId,
+        conversationId,
+        user: req.user.id,
+        assistant_id,
+        thread_id,
+        model: assistant_id,
+        endpoint,
+        spec: endpointOption.spec,
+        iconURL: endpointOption.iconURL,
+      };
+
+      sendEvent(res, {
+        final: true,
+        conversation: { ...conversation, thread_id },
+        requestMessage: { parentMessageId, thread_id },
+      });
+      res.end();
+
+      await userMessageSave;
+      await saveAssistantMessage(req, { ...foundryResponseMessage, model });
+
+      if (parentMessageId === Constants.NO_PARENT && !_thread_id) {
+        addTitle(req, { text, responseText: foundryResult.responseText, conversationId });
+      }
+
+      if (foundryResult.usage) {
+        await recordUsage({
+          prompt_tokens: foundryResult.usage.promptTokens,
+          completion_tokens: foundryResult.usage.completionTokens,
+          user: req.user.id,
+          model: foundryResult.model ?? model,
+          conversationId,
+        });
+      }
+
+      return;
+    }
+
     const { openai: _openai } = await getOpenAIClient({
       req,
       res,
@@ -524,7 +625,7 @@ const chatV1 = async (req, res) => {
     let response;
 
     const processRun = async (retry = false) => {
-      if (endpoint === EModelEndpoint.azureAssistants) {
+      if (endpoint === EModelEndpoint.azureAssistants || endpoint === AzureAssistantsOldEndpoint) {
         body.model = openai._options.model;
         openai.attachedFileIds = attachedFileIds;
         openai.visionPromise = visionPromise;
