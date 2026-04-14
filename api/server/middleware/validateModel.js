@@ -1,5 +1,10 @@
 const { handleError } = require('@librechat/api');
-const { ViolationTypes } = require('librechat-data-provider');
+const {
+  ViolationTypes,
+  isAssistantsEndpoint,
+  resolveAssistantsConfigEndpoint,
+  AzureAssistantsNewEndpoint,
+} = require('librechat-data-provider');
 const { getModelsConfig } = require('~/server/controllers/ModelController');
 const { getEndpointsConfig } = require('~/server/services/Config');
 const { logViolation } = require('~/cache');
@@ -16,7 +21,12 @@ const MODEL_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9_.:/@+-]*$/;
  * @param {Function} next - The Express next function.
  */
 const validateModel = async (req, res, next) => {
-  const { endpoint } = req.body;
+  const { endpoint, endpointType } = req.body;
+
+  if (endpoint === AzureAssistantsNewEndpoint) {
+    return next();
+  }
+
   const rawModel = req.body.model;
 
   if (!rawModel || typeof rawModel !== 'string') {
@@ -31,7 +41,10 @@ const validateModel = async (req, res, next) => {
   req.body.model = model;
 
   const endpointsConfig = await getEndpointsConfig(req);
-  const endpointConfig = endpointsConfig?.[endpoint];
+  const configEndpoint = isAssistantsEndpoint(endpoint)
+    ? resolveAssistantsConfigEndpoint(endpointType ?? endpoint)
+    : endpoint;
+  const endpointConfig = endpointsConfig?.[configEndpoint];
 
   if (endpointConfig?.userProvide) {
     return next();
@@ -43,7 +56,7 @@ const validateModel = async (req, res, next) => {
     return handleError(res, { text: 'Models not loaded' });
   }
 
-  const availableModels = modelsConfig[endpoint];
+  const availableModels = modelsConfig[configEndpoint];
   if (!availableModels) {
     return handleError(res, { text: 'Endpoint models not loaded' });
   }
