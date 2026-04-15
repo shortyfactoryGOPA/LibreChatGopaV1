@@ -1,4 +1,5 @@
 import { AIProjectClient } from '@azure/ai-projects';
+import type { PromptAgentDefinition } from '@azure/ai-projects';
 
 import { getFoundryProjectEndpoint, getFoundryTokenCredential } from './initialize';
 import type { FoundryAgentUsage } from './chat';
@@ -47,12 +48,23 @@ export async function chatWithNewFoundryAgent({
 
   const agentName = extractAgentName(assistantId);
   const projectClient = new AIProjectClient(endpoint, getFoundryTokenCredential());
+
+  const agent = await projectClient.agents.get(agentName);
+  const definition = agent.versions.latest.definition as PromptAgentDefinition;
+  const modelDeployment = definition.model;
+
+  if (!modelDeployment) {
+    throw new Error(`Agent "${agentName}" does not have a model deployment configured.`);
+  }
+
+  const systemInstructions = instructions?.trim() || definition.instructions || undefined;
+
   const openai = projectClient.getOpenAIClient();
 
   const response = await openai.responses.create({
-    model: agentName,
+    model: modelDeployment,
     input: text,
-    ...(instructions?.trim() ? { instructions: instructions.trim() } : {}),
+    ...(systemInstructions ? { instructions: systemInstructions } : {}),
     ...(threadId?.trim() ? { previous_response_id: threadId.trim() } : {}),
   });
 
