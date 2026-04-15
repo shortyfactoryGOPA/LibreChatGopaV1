@@ -1,4 +1,5 @@
 export * from './chat';
+export * from './chatNew';
 export * from './files';
 export * from './project';
 export * from './list';

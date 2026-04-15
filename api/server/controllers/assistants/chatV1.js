@@ -8,6 +8,7 @@ const {
   getBalanceConfig,
   getModelMaxTokens,
   chatWithFoundryAgent,
+  chatWithNewFoundryAgent,
 } = require('@librechat/api');
 const {
   Time,
@@ -23,6 +24,7 @@ const {
   AssistantStreamEvents,
   AzureAssistantsNewEndpoint,
   AzureAssistantsOldEndpoint,
+  AzureNewFoundryAssistantsEndpoint,
 } = require('librechat-data-provider');
 const {
   initThread,
@@ -402,6 +404,98 @@ const chatV1 = async (req, res) => {
           completion_tokens: foundryResult.usage.completionTokens,
           user: req.user.id,
           model: foundryResult.model ?? model,
+          conversationId,
+        });
+      }
+
+      return;
+    }
+
+    if (endpoint === AzureNewFoundryAssistantsEndpoint) {
+      await checkBalanceBeforeRun();
+
+      requestMessage = {
+        user: req.user.id,
+        text,
+        messageId: userMessageId,
+        parentMessageId,
+        conversationId,
+        isCreatedByUser: true,
+        assistant_id,
+        thread_id: _thread_id,
+        model: assistant_id,
+        endpoint,
+      };
+
+      conversation = {
+        conversationId,
+        endpoint,
+        promptPrefix,
+        instructions,
+        assistant_id,
+      };
+
+      const userMessageSave = saveUserMessage(req, { ...requestMessage, model });
+
+      sendEvent(res, {
+        sync: true,
+        conversationId,
+        requestMessage,
+        responseMessage: {
+          user: req.user.id,
+          messageId: responseMessageId,
+          parentMessageId: userMessageId,
+          conversationId,
+          assistant_id,
+          thread_id: _thread_id,
+          model: assistant_id,
+        },
+      });
+
+      const newFoundryResult = await chatWithNewFoundryAgent({
+        text,
+        assistantId: assistant_id,
+        threadId: _thread_id,
+        instructions: instructions || null,
+      });
+
+      completedRun = true;
+      thread_id = newFoundryResult.threadId;
+
+      const newFoundryResponseMessage = {
+        messageId: responseMessageId,
+        text: newFoundryResult.responseText,
+        parentMessageId: userMessageId,
+        conversationId,
+        user: req.user.id,
+        assistant_id,
+        thread_id,
+        model: assistant_id,
+        endpoint,
+        spec: endpointOption.spec,
+        iconURL: endpointOption.iconURL,
+      };
+
+      sendEvent(res, {
+        final: true,
+        conversation: { ...conversation, thread_id },
+        requestMessage: { parentMessageId, thread_id },
+      });
+      res.end();
+
+      await userMessageSave;
+      await saveAssistantMessage(req, { ...newFoundryResponseMessage, model });
+
+      if (parentMessageId === Constants.NO_PARENT && !_thread_id) {
+        addTitle(req, { text, responseText: newFoundryResult.responseText, conversationId });
+      }
+
+      if (newFoundryResult.usage) {
+        await recordUsage({
+          prompt_tokens: newFoundryResult.usage.promptTokens,
+          completion_tokens: newFoundryResult.usage.completionTokens,
+          user: req.user.id,
+          model: newFoundryResult.model ?? model,
           conversationId,
         });
       }
