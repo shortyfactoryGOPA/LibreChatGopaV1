@@ -574,7 +574,12 @@ const setOpenIDAuthTokens = (tokenset, req, res, userId, existingRefreshToken) =
 const resendVerificationEmail = async (req) => {
   try {
     const { email } = req.body;
-    await deleteTokens({ email });
+
+    const recentToken = await findToken({ email }, { sort: { createdAt: -1 } });
+    if (recentToken && Date.now() - new Date(recentToken.createdAt).getTime() < 60_000) {
+      return { status: 200, message: genericVerificationMessage };
+    }
+
     const user = await findUser({ email }, 'email _id name');
 
     if (!user) {
@@ -583,6 +588,15 @@ const resendVerificationEmail = async (req) => {
     }
 
     const [verifyToken, hash] = createTokenHash();
+
+    await deleteTokens({ email });
+    await createToken({
+      userId: user._id,
+      email: user.email,
+      token: hash,
+      createdAt: Date.now(),
+      expiresIn: 900,
+    });
 
     const verificationLink = `${
       domains.client
@@ -598,14 +612,6 @@ const resendVerificationEmail = async (req) => {
         year: new Date().getFullYear(),
       },
       template: 'verifyEmail.handlebars',
-    });
-
-    await createToken({
-      userId: user._id,
-      email: user.email,
-      token: hash,
-      createdAt: Date.now(),
-      expiresIn: 900,
     });
 
     logger.info(`[resendVerificationEmail] Verification link issued. [Email: ${user.email}]`);
