@@ -33,11 +33,9 @@ const makeAssistantAvatar =
         />
       );
     } else if (assistantName) {
-      return (
-        <AssistantIcon className={cn(colorClass, className)} size={size} />
-      );
+      return <AssistantIcon className={cn(className, colorClass)} size={size} />;
     }
-    return <Sparkles className={cn(colorClass, context === 'landing' ? 'icon-2xl' : '', className)} />;
+    return <Sparkles className={cn(context === 'landing' ? 'icon-2xl' : '', className, colorClass)} />;
   };
 
 const AssistantAvatar = ({

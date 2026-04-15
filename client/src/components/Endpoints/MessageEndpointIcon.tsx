@@ -15,6 +15,7 @@ import {
   CodeyIcon,
   GeminiIcon,
   BedrockIcon,
+  Sparkles,
   AssistantIcon,
   AnthropicIcon,
   AzureMinimalIcon,
@@ -141,11 +142,7 @@ const MessageEndpointIcon: React.FC<IconProps> = (props) => {
         </div>
       </div>
     ) : (
-      <div className="h-6 w-6">
-        <div className="shadow-stroke flex h-6 w-6 items-center justify-center overflow-hidden rounded-full">
-          <AssistantIcon className={cn('h-2/3 w-2/3', colorClass)} />
-        </div>
-      </div>
+      <Sparkles className={cn('icon-sm', colorClass)} />
     ),
     name: endpoint,
   });

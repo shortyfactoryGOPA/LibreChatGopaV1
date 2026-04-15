@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { MCPIcon, AttachmentIcon, OpenAIMinimalIcon } from '@librechat/client';
+import { MCPIcon, AttachmentIcon, OpenAIMinimalIcon, Sparkles } from '@librechat/client';
 import {
   Bot,
   Brain,
@@ -106,7 +106,7 @@ export default function useSideNavLinks({
       links.push({
         title: 'com_sidepanel_assistant_builder',
         label: '',
-        icon: OpenAIMinimalIcon,
+        icon: Sparkles,
         id: EModelEndpoint.assistants,
         Component: PanelSwitch,
       });
