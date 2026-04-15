@@ -32,6 +32,7 @@ interface ConversationsProps {
   isSearchLoading: boolean;
   isChatsExpanded: boolean;
   setIsChatsExpanded: (expanded: boolean) => void;
+  pendingTitleIds?: Set<string>;
 }
 
 interface MeasuredRowProps {
@@ -160,6 +161,7 @@ const Conversations: FC<ConversationsProps> = ({
   isSearchLoading,
   isChatsExpanded,
   setIsChatsExpanded,
+  pendingTitleIds,
 }) => {
   const localize = useLocalize();
   const search = useRecoilValue(store.search);
@@ -321,7 +323,8 @@ const Conversations: FC<ConversationsProps> = ({
       }
 
       if (item.type === 'convo') {
-        const isGenerating = activeJobIds.has(item.convo.conversationId ?? '');
+        const convoId = item.convo.conversationId ?? '';
+        const isGenerating = activeJobIds.has(convoId) || (pendingTitleIds?.has(convoId) ?? false);
         return (
           <MeasuredRow key={key} {...rowProps}>
             <MemoizedConvo
@@ -346,6 +349,7 @@ const Conversations: FC<ConversationsProps> = ({
       setIsChatsExpanded,
       shouldShowFavorites,
       activeJobIds,
+      pendingTitleIds,
     ],
   );
 

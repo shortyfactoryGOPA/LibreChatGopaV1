@@ -8,6 +8,7 @@ const {
   getBalanceConfig,
   getModelMaxTokens,
   chatWithFoundryAgent,
+  chatWithNewFoundryAgent,
 } = require('@librechat/api');
 const {
   Time,
@@ -23,6 +24,7 @@ const {
   AssistantStreamEvents,
   AzureAssistantsNewEndpoint,
   AzureAssistantsOldEndpoint,
+  AzureNewFoundryAssistantsEndpoint,
 } = require('librechat-data-provider');
 const {
   initThread,
@@ -255,9 +257,39 @@ const chatV1 = async (req, res) => {
       }
     });
 
+    // Discard thread_id if its format doesn't match the current endpoint type.
+    // Prevents cross-endpoint contamination when a user switches between classic Foundry
+    // (thread_xxx IDs) and new Foundry / Responses API (resp_xxx IDs) within a session.
+    if (thread_id) {
+      const validForEndpoint =
+        endpoint === AzureNewFoundryAssistantsEndpoint
+          ? !thread_id.startsWith('thread_')
+          : thread_id.startsWith('thread_');
+      if (!validForEndpoint) {
+        thread_id = null;
+      }
+    }
+
     if (convoId && !_thread_id) {
-      completedRun = true;
-      throw new Error('Missing thread_id for existing conversation');
+      const existingConvo = await getConvo(req.user.id, convoId);
+      const dbThreadId = existingConvo?.thread_id;
+      const isFoundryEndpoint =
+        endpoint === AzureAssistantsNewEndpoint || endpoint === AzureNewFoundryAssistantsEndpoint;
+      if (dbThreadId) {
+        // Validate thread_id format matches the endpoint type to avoid cross-contamination
+        // (e.g. resp_ IDs from Responses API must not be passed to classic threads/runs API)
+        const validForEndpoint =
+          endpoint === AzureNewFoundryAssistantsEndpoint
+            ? !dbThreadId.startsWith('thread_')
+            : dbThreadId.startsWith('thread_');
+        if (validForEndpoint) {
+          thread_id = dbThreadId;
+        }
+        // If format doesn't match: thread_id stays null, Foundry endpoints create a new thread
+      } else if (!isFoundryEndpoint) {
+        completedRun = true;
+        throw new Error('Missing thread_id for existing conversation');
+      }
     }
 
     if (!assistant_id) {
@@ -359,7 +391,7 @@ const chatV1 = async (req, res) => {
       const foundryResult = await chatWithFoundryAgent({
         text,
         assistantId: assistant_id,
-        threadId: _thread_id,
+        threadId: thread_id,
         instructions: instructions || null,
         additionalInstructions: promptPrefix || null,
         attachments: files.map(({ file_id }) => ({ file_id })),
@@ -367,6 +399,7 @@ const chatV1 = async (req, res) => {
 
       completedRun = true;
       thread_id = foundryResult.threadId;
+      requestMessage.thread_id = thread_id;
 
       const foundryResponseMessage = {
         messageId: responseMessageId,
@@ -385,7 +418,8 @@ const chatV1 = async (req, res) => {
       sendEvent(res, {
         final: true,
         conversation: { ...conversation, thread_id },
-        requestMessage: { parentMessageId, thread_id },
+        requestMessage,
+        responseMessage: foundryResponseMessage,
       });
       res.end();
 
@@ -393,7 +427,7 @@ const chatV1 = async (req, res) => {
       await saveAssistantMessage(req, { ...foundryResponseMessage, model });
 
       if (parentMessageId === Constants.NO_PARENT && !_thread_id) {
-        addTitle(req, { text, responseText: foundryResult.responseText, conversationId });
+        addTitle(req, { text, responseText: foundryResult.responseText, conversationId, model: foundryResult.model, endpoint });
       }
 
       if (foundryResult.usage) {
@@ -402,6 +436,100 @@ const chatV1 = async (req, res) => {
           completion_tokens: foundryResult.usage.completionTokens,
           user: req.user.id,
           model: foundryResult.model ?? model,
+          conversationId,
+        });
+      }
+
+      return;
+    }
+
+    if (endpoint === AzureNewFoundryAssistantsEndpoint) {
+      await checkBalanceBeforeRun();
+
+      requestMessage = {
+        user: req.user.id,
+        text,
+        messageId: userMessageId,
+        parentMessageId,
+        conversationId,
+        isCreatedByUser: true,
+        assistant_id,
+        thread_id: _thread_id,
+        model: assistant_id,
+        endpoint,
+      };
+
+      conversation = {
+        conversationId,
+        endpoint,
+        promptPrefix,
+        instructions,
+        assistant_id,
+      };
+
+      const userMessageSave = saveUserMessage(req, { ...requestMessage, model });
+
+      sendEvent(res, {
+        sync: true,
+        conversationId,
+        requestMessage,
+        responseMessage: {
+          user: req.user.id,
+          messageId: responseMessageId,
+          parentMessageId: userMessageId,
+          conversationId,
+          assistant_id,
+          thread_id: _thread_id,
+          model: assistant_id,
+        },
+      });
+
+      const newFoundryResult = await chatWithNewFoundryAgent({
+        text,
+        assistantId: assistant_id,
+        threadId: thread_id,
+        instructions: instructions || null,
+      });
+
+      completedRun = true;
+      thread_id = newFoundryResult.threadId;
+      requestMessage.thread_id = thread_id;
+
+      const newFoundryResponseMessage = {
+        messageId: responseMessageId,
+        text: newFoundryResult.responseText,
+        parentMessageId: userMessageId,
+        conversationId,
+        user: req.user.id,
+        assistant_id,
+        thread_id,
+        model: assistant_id,
+        endpoint,
+        spec: endpointOption.spec,
+        iconURL: endpointOption.iconURL,
+      };
+
+      sendEvent(res, {
+        final: true,
+        conversation: { ...conversation, thread_id },
+        requestMessage,
+        responseMessage: newFoundryResponseMessage,
+      });
+      res.end();
+
+      await userMessageSave;
+      await saveAssistantMessage(req, { ...newFoundryResponseMessage, model });
+
+      if (parentMessageId === Constants.NO_PARENT && !_thread_id) {
+        addTitle(req, { text, responseText: newFoundryResult.responseText, conversationId, model: newFoundryResult.model, endpoint });
+      }
+
+      if (newFoundryResult.usage) {
+        await recordUsage({
+          prompt_tokens: newFoundryResult.usage.promptTokens,
+          completion_tokens: newFoundryResult.usage.completionTokens,
+          user: req.user.id,
+          model: newFoundryResult.model ?? model,
           conversationId,
         });
       }

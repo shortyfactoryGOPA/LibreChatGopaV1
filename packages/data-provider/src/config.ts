@@ -7,6 +7,7 @@ import {
   isAgentsEndpoint,
   AzureAssistantsNewEndpoint,
   AzureAssistantsOldEndpoint,
+  AzureNewFoundryAssistantsEndpoint,
 } from './schemas';
 import type { AssistantsEndpoint } from './schemas';
 import { ComponentTypes, SettingTypes, OptionTypes } from './generate';
@@ -241,6 +242,7 @@ export const defaultAssistantsVersion = {
   [EModelEndpoint.azureAssistants]: 1,
   [AzureAssistantsNewEndpoint]: 1,
   [AzureAssistantsOldEndpoint]: 1,
+  [AzureNewFoundryAssistantsEndpoint]: 1,
 };
 
 export const baseEndpointSchema = z.object({
@@ -1200,6 +1202,7 @@ export const alternateName: Record<string, string> = {
   [EModelEndpoint.azureAssistants]: 'Azure Assistants',
   [AzureAssistantsNewEndpoint]: 'Azure AI Foundry',
   [AzureAssistantsOldEndpoint]: 'Azure Assistants (Legacy)',
+  [AzureNewFoundryAssistantsEndpoint]: 'Azure AI Foundry NEW',
   [EModelEndpoint.azureOpenAI]: 'Azure OpenAI',
   [EModelEndpoint.google]: 'Google',
   [EModelEndpoint.anthropic]: 'Anthropic',
@@ -1355,6 +1358,7 @@ export const EndpointURLs = {
   [EModelEndpoint.azureAssistants]: `${apiBaseUrl()}/api/assistants/v1/chat`,
   [AzureAssistantsNewEndpoint]: `${apiBaseUrl()}/api/assistants/v1/chat`,
   [AzureAssistantsOldEndpoint]: `${apiBaseUrl()}/api/assistants/v1/chat`,
+  [AzureNewFoundryAssistantsEndpoint]: `${apiBaseUrl()}/api/assistants/v1/chat`,
   [EModelEndpoint.agents]: `${apiBaseUrl()}/api/${EModelEndpoint.agents}/chat`,
 } as const;
 
@@ -2094,7 +2098,8 @@ export function isAzureAssistantsVariantEnabled(
   if (
     endpoint !== EModelEndpoint.azureAssistants &&
     endpoint !== AzureAssistantsNewEndpoint &&
-    endpoint !== AzureAssistantsOldEndpoint
+    endpoint !== AzureAssistantsOldEndpoint &&
+    endpoint !== AzureNewFoundryAssistantsEndpoint
   ) {
     return true;
   }
@@ -2110,6 +2115,10 @@ export function isAzureAssistantsVariantEnabled(
 
   if (endpoint === AzureAssistantsOldEndpoint) {
     return config.enableOldAssistants !== false;
+  }
+
+  if (endpoint === AzureNewFoundryAssistantsEndpoint) {
+    return config.enableNewAssistants !== false;
   }
 
   return config.enableNewAssistants !== false || config.enableOldAssistants !== false;

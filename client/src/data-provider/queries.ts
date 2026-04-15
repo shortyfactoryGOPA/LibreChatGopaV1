@@ -242,7 +242,7 @@ export const useListAssistantsQuery = <TData = AssistantListResponse>(
       staleTime: 1000 * 5,
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
-      refetchOnMount: false,
+      refetchOnMount: true,
       retry: false,
       ...config,
       enabled: config?.enabled !== undefined ? config.enabled && enabled : enabled,

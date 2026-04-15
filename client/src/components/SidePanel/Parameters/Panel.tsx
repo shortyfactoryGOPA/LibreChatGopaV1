@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import keyBy from 'lodash/keyBy';
 import { RotateCcw } from 'lucide-react';
+import { useRecoilValue } from 'recoil';
 import {
   excludedKeys,
   paramSettings,
@@ -12,10 +13,11 @@ import {
 import type { TPreset } from 'librechat-data-provider';
 import { SaveAsPresetDialog } from '~/components/Endpoints';
 import { useSetIndexOptions, useLocalize } from '~/hooks';
-import { useGetEndpointsQuery } from '~/data-provider';
+import { useGetEndpointsQuery, useGetPresetsQuery } from '~/data-provider';
 import { componentMapping } from './components';
 import { useChatContext } from '~/Providers';
 import { logger } from '~/utils';
+import store from '~/store';
 
 export default function Parameters() {
   const localize = useLocalize();
@@ -24,8 +26,10 @@ export default function Parameters() {
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [preset, setPreset] = useState<TPreset | null>(null);
+  const activePresetId = useRecoilValue(store.activePresetId);
 
   const { data: endpointsConfig = {} } = useGetEndpointsQuery();
+  const { data: presets = [] } = useGetPresetsQuery();
   const provider = conversation?.endpoint ?? '';
   const model = conversation?.model ?? '';
 
@@ -133,9 +137,16 @@ export default function Parameters() {
     const newPreset = tConvoUpdateSchema.parse({
       ...conversation,
     }) as TPreset;
+    if (activePresetId) {
+      newPreset.presetId = activePresetId;
+      const activePreset = presets.find((p) => p.presetId === activePresetId);
+      if (activePreset?.title) {
+        newPreset.title = activePreset.title;
+      }
+    }
     setPreset(newPreset);
     setIsDialogOpen(true);
-  }, [conversation]);
+  }, [conversation, activePresetId, presets]);
 
   if (!parameters) {
     return null;

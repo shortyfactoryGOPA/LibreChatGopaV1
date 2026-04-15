@@ -53,14 +53,10 @@ async function buildEndpointOption(req, res, next) {
   }
 
   const appConfig = req.config;
-  if (appConfig.modelSpecs?.list && appConfig.modelSpecs?.enforce && !isAgentsEndpoint(endpoint) && !isAssistantsEndpoint(endpoint)) {
+  if (appConfig.modelSpecs?.list && appConfig.modelSpecs?.enforce && parsedBody.spec && !isAgentsEndpoint(endpoint) && !isAssistantsEndpoint(endpoint)) {
     /** @type {{ list: TModelSpec[] }}*/
     const { list } = appConfig.modelSpecs;
     const { spec } = parsedBody;
-
-    if (!spec) {
-      return handleError(res, { text: 'No model spec selected' });
-    }
 
     const currentModelSpec = list.find((s) => s.name === spec);
     if (!currentModelSpec) {

@@ -4,6 +4,7 @@ const {
   isAssistantsEndpoint,
   resolveAssistantsConfigEndpoint,
   AzureAssistantsNewEndpoint,
+  AzureNewFoundryAssistantsEndpoint,
 } = require('librechat-data-provider');
 const { getModelsConfig } = require('~/server/controllers/ModelController');
 const { getEndpointsConfig } = require('~/server/services/Config');
@@ -23,7 +24,7 @@ const MODEL_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9_.:/@+-]*$/;
 const validateModel = async (req, res, next) => {
   const { endpoint, endpointType } = req.body;
 
-  if (endpoint === AzureAssistantsNewEndpoint) {
+  if (endpoint === AzureAssistantsNewEndpoint || endpoint === AzureNewFoundryAssistantsEndpoint) {
     return next();
   }
 

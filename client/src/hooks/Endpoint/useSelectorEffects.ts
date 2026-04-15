@@ -74,13 +74,13 @@ export default function useSelectorEffects({
 
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const debouncedSetSelectedValues = (values: SelectedValues) => {
+  const debouncedSetSelectedValues = (values: Omit<SelectedValues, 'presetTitle'>) => {
     if (debounceTimeoutRef.current) {
       clearTimeout(debounceTimeoutRef.current);
     }
 
     debounceTimeoutRef.current = setTimeout(() => {
-      setSelectedValues(values);
+      setSelectedValues((prev) => ({ ...values, presetTitle: prev.presetTitle }));
     }, 150);
   };
 

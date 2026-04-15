@@ -4,13 +4,17 @@ import { OGDialogTemplate, OGDialog, Input, Label, useToastContext } from '@libr
 import type { TEditPresetProps } from '~/common';
 import { cn, removeFocusOutlines, cleanupPreset, defaultTextProps } from '~/utils';
 import { NotificationSeverity } from '~/common';
+import { useUpdatePresetMutation } from '~/data-provider';
 import { useLocalize } from '~/hooks';
 
 const SaveAsPresetDialog = ({ open, onOpenChange, preset }: TEditPresetProps) => {
   const [title, setTitle] = useState<string>(preset.title ?? 'My Preset');
   const createPresetMutation = useCreatePresetMutation();
+  const updatePresetMutation = useUpdatePresetMutation();
   const { showToast } = useToastContext();
   const localize = useLocalize();
+
+  const isUpdate = !!preset.presetId;
 
   const submitPreset = () => {
     const _preset = cleanupPreset({
@@ -23,20 +27,22 @@ const SaveAsPresetDialog = ({ open, onOpenChange, preset }: TEditPresetProps) =>
     const toastTitle =
       (_preset.title ?? '') ? `\`${_preset.title}\`` : localize('com_endpoint_preset_title');
 
-    createPresetMutation.mutate(_preset, {
-      onSuccess: () => {
-        showToast({
-          message: `${toastTitle} ${localize('com_ui_saved')}`,
-        });
-        onOpenChange(false); // Close the dialog on success
-      },
-      onError: () => {
-        showToast({
-          message: localize('com_endpoint_preset_save_error'),
-          severity: NotificationSeverity.ERROR,
-        });
-      },
-    });
+    const onSuccess = () => {
+      showToast({ message: `${toastTitle} ${localize('com_ui_saved')}` });
+      onOpenChange(false);
+    };
+    const onError = () => {
+      showToast({
+        message: localize('com_endpoint_preset_save_error'),
+        severity: NotificationSeverity.ERROR,
+      });
+    };
+
+    if (isUpdate) {
+      updatePresetMutation.mutate({ ..._preset, presetId: preset.presetId }, { onSuccess, onError });
+    } else {
+      createPresetMutation.mutate(_preset, { onSuccess, onError });
+    }
   };
 
   useEffect(() => {

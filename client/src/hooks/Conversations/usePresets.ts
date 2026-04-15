@@ -35,6 +35,7 @@ export default function usePresets(index = 0) {
   const availableTools = useRecoilValue(store.availableTools);
   const setPresetModalVisible = useSetRecoilState(store.presetModalVisible);
   const [_defaultPreset, setDefaultPreset] = useRecoilState(store.defaultPreset);
+  const setActivePresetId = useSetRecoilState(store.activePresetId);
   const presetsQuery = useGetPresetsQuery({ enabled: !!user && isAuthenticated });
   const preset = useRecoilValue(store.presetByIndex(index));
   const setPreset = useSetRecoilState(store.presetByIndex(index));
@@ -167,6 +168,7 @@ export default function usePresets(index = 0) {
       return;
     }
 
+    setActivePresetId(_newPreset.presetId ?? null);
     const conversation = getConversation();
     const newPreset = removeUnavailableTools(_newPreset, availableTools);
 

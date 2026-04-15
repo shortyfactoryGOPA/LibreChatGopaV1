@@ -16,6 +16,7 @@ export interface SelectedValues {
   endpoint: string | null;
   model: string | null;
   modelSpec: string | null;
+  presetTitle?: string | null;
 }
 
 export interface ModelSelectorProps {

@@ -180,6 +180,10 @@ export const getDisplayValue = ({
     return spec?.label || spec?.name || localize('com_ui_select_model');
   }
 
+  if (selectedValues.presetTitle) {
+    return selectedValues.presetTitle;
+  }
+
   if (selectedValues.model && selectedValues.endpoint) {
     const endpoint = mappedEndpoints.find((e) => e.value === selectedValues.endpoint);
     if (!endpoint) {

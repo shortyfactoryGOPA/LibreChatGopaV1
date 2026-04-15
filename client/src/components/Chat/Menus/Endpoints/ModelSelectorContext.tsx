@@ -1,5 +1,6 @@
 import debounce from 'lodash/debounce';
 import React, { createContext, useContext, useState, useMemo, useCallback } from 'react';
+import { useSetRecoilState } from 'recoil';
 import { EModelEndpoint, isAgentsEndpoint, isAssistantsEndpoint } from 'librechat-data-provider';
 import type * as t from 'librechat-data-provider';
 import type { Endpoint, SelectedValues } from '~/common';
@@ -11,10 +12,11 @@ import {
   useLocalize,
 } from '~/hooks';
 import { useAgentsMapContext, useAssistantsMapContext, useLiveAnnouncer } from '~/Providers';
-import { useGetEndpointsQuery, useListAgentsQuery } from '~/data-provider';
+import { useGetEndpointsQuery, useGetPresetsQuery, useListAgentsQuery } from '~/data-provider';
 import { useModelSelectorChatContext } from './ModelSelectorChatContext';
 import useSelectMention from '~/hooks/Input/useSelectMention';
 import { filterItems } from './utils';
+import store from '~/store';
 
 type ModelSelectorContextType = {
   // State
@@ -23,6 +25,7 @@ type ModelSelectorContextType = {
   endpointSearchValues: Record<string, string>;
   searchResults: (t.TModelSpec | Endpoint)[] | null;
   // LibreChat
+  presets: t.TPreset[];
   modelSpecs: t.TModelSpec[];
   mappedEndpoints: Endpoint[];
   agentsMap: t.TAgentsMap | undefined;
@@ -34,6 +37,7 @@ type ModelSelectorContextType = {
   setSelectedValues: React.Dispatch<React.SetStateAction<SelectedValues>>;
   setSearchValue: (value: string) => void;
   setEndpointSearchValue: (endpoint: string, value: string) => void;
+  handleSelectPreset: (preset: t.TPreset) => void;
   handleSelectSpec: (spec: t.TModelSpec) => void;
   handleSelectEndpoint: (endpoint: Endpoint) => void;
   handleSelectModel: (endpoint: Endpoint, model: string) => void;
@@ -120,8 +124,10 @@ export function ModelSelectorProvider({ children, startupConfig }: ModelSelector
     [agentsMap],
   );
 
-  const { onSelectEndpoint, onSelectSpec } = useSelectMention({
-    // presets,
+  const { data: presets = [] } = useGetPresetsQuery();
+  const setActivePresetId = useSetRecoilState(store.activePresetId);
+
+  const { onSelectEndpoint, onSelectSpec, onSelectPreset } = useSelectMention({
     modelSpecs,
     getConversation,
     assistantsMap,
@@ -187,10 +193,25 @@ export function ModelSelectorProvider({ children, startupConfig }: ModelSelector
     }));
   }, []);
 
+  const handleSelectPreset = useCallback(
+    (preset: t.TPreset) => {
+      onSelectPreset?.(preset);
+      setActivePresetId(preset.presetId ?? null);
+      setSelectedValues({
+        endpoint: preset.endpoint ?? '',
+        model: preset.model ?? '',
+        modelSpec: '',
+        presetTitle: preset.title ?? '',
+      });
+    },
+    [onSelectPreset, setActivePresetId],
+  );
+
   const handleSelectSpec = useCallback(
     (spec: t.TModelSpec) => {
       let model = spec.preset.model ?? null;
       onSelectSpec?.(spec);
+      setActivePresetId(null);
       if (isAgentsEndpoint(spec.preset.endpoint)) {
         model = spec.preset.agent_id ?? '';
       } else if (isAssistantsEndpoint(spec.preset.endpoint)) {
@@ -202,7 +223,7 @@ export function ModelSelectorProvider({ children, startupConfig }: ModelSelector
         modelSpec: spec.name,
       });
     },
-    [onSelectSpec],
+    [onSelectSpec, setActivePresetId],
   );
 
   const handleSelectEndpoint = useCallback(
@@ -211,6 +232,7 @@ export function ModelSelectorProvider({ children, startupConfig }: ModelSelector
         if (endpoint.value) {
           onSelectEndpoint?.(endpoint.value);
         }
+        setActivePresetId(null);
         setSelectedValues({
           endpoint: endpoint.value,
           model: '',
@@ -218,7 +240,7 @@ export function ModelSelectorProvider({ children, startupConfig }: ModelSelector
         });
       }
     },
-    [onSelectEndpoint],
+    [onSelectEndpoint, setActivePresetId],
   );
 
   const handleSelectModel = useCallback(
@@ -236,6 +258,7 @@ export function ModelSelectorProvider({ children, startupConfig }: ModelSelector
       } else if (endpoint.value) {
         onSelectEndpoint?.(endpoint.value, { model });
       }
+      setActivePresetId(null);
       setSelectedValues({
         endpoint: endpoint.value,
         model,
@@ -251,6 +274,7 @@ export function ModelSelectorProvider({ children, startupConfig }: ModelSelector
 
   const value = useMemo(
     () => ({
+      presets,
       searchValue,
       searchResults,
       selectedValues,
@@ -260,6 +284,7 @@ export function ModelSelectorProvider({ children, startupConfig }: ModelSelector
       assistantsMap,
       mappedEndpoints,
       endpointsConfig,
+      handleSelectPreset,
       handleSelectSpec,
       handleSelectModel,
       setSelectedValues,
@@ -270,6 +295,7 @@ export function ModelSelectorProvider({ children, startupConfig }: ModelSelector
       ...keyProps,
     }),
     [
+      presets,
       searchValue,
       searchResults,
       selectedValues,
@@ -279,6 +305,7 @@ export function ModelSelectorProvider({ children, startupConfig }: ModelSelector
       assistantsMap,
       mappedEndpoints,
       endpointsConfig,
+      handleSelectPreset,
       handleSelectSpec,
       handleSelectModel,
       setSelectedValues,

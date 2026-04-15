@@ -258,7 +258,7 @@ export async function getFoundryProjectAgent({
 
     return (await response.json()) as FoundryProjectAgent;
   })().catch((error: unknown) => {
-    logger.warn('[foundryProject] Failed to retrieve Foundry project agent details', {
+    logger.debug('[foundryProject] Failed to retrieve Foundry project agent details', {
       foundryAgentId,
       error: error instanceof Error ? error.message : String(error),
     });

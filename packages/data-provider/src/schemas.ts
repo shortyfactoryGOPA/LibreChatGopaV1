@@ -29,6 +29,7 @@ export enum EModelEndpoint {
 
 export const AzureAssistantsNewEndpoint = 'azureNewAssistants';
 export const AzureAssistantsOldEndpoint = 'azureOldAssistants';
+export const AzureNewFoundryAssistantsEndpoint = 'azureNewFoundryAssistants';
 
 /** Mirrors `@librechat/agents` providers */
 export enum Providers {
@@ -133,7 +134,8 @@ export type AssistantsEndpoint =
   | EModelEndpoint.assistants
   | EModelEndpoint.azureAssistants
   | typeof AzureAssistantsNewEndpoint
-  | typeof AzureAssistantsOldEndpoint;
+  | typeof AzureAssistantsOldEndpoint
+  | typeof AzureNewFoundryAssistantsEndpoint;
 
 export const isAssistantsEndpoint = (_endpoint?: AssistantsEndpoint | null | string): boolean => {
   const endpoint = _endpoint ?? '';
@@ -154,7 +156,8 @@ export const isAzureAssistantsEndpoint = (
   return (
     endpoint === EModelEndpoint.azureAssistants ||
     endpoint === AzureAssistantsNewEndpoint ||
-    endpoint === AzureAssistantsOldEndpoint
+    endpoint === AzureAssistantsOldEndpoint ||
+    endpoint === AzureNewFoundryAssistantsEndpoint
   );
 };
 
@@ -175,7 +178,11 @@ export const resolveAssistantsConfigEndpoint = (
 ): AssistantsEndpoint | string => {
   const endpoint = _endpoint ?? '';
 
-  if (endpoint === AzureAssistantsNewEndpoint || endpoint === AzureAssistantsOldEndpoint) {
+  if (
+    endpoint === AzureAssistantsNewEndpoint ||
+    endpoint === AzureAssistantsOldEndpoint ||
+    endpoint === AzureNewFoundryAssistantsEndpoint
+  ) {
     return EModelEndpoint.azureAssistants;
   }
 

@@ -82,7 +82,7 @@ interface:
 
   modelSelect: true
   parameters: true
-  presets: false
+  presets: true
   prompts:
     use: true
     create: true

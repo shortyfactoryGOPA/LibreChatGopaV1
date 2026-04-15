@@ -9,6 +9,7 @@ import {
   getConfigDefaults,
   AzureAssistantsNewEndpoint,
   AzureAssistantsOldEndpoint,
+  AzureNewFoundryAssistantsEndpoint,
   isAzureAssistantsVariantEnabled,
   resolveAssistantsConfigEndpoint,
 } from 'librechat-data-provider';
@@ -62,6 +63,10 @@ export const useEndpoints = ({
   );
   const azureAssistantsOld: Assistant[] = useMemo(
     () => Object.values(assistantsMap?.[AzureAssistantsOldEndpoint] ?? {}),
+    [assistantsMap],
+  );
+  const azureNewFoundryAssistants: Assistant[] = useMemo(
+    () => Object.values(assistantsMap?.[AzureNewFoundryAssistantsEndpoint] ?? {}),
     [assistantsMap],
   );
 
@@ -164,6 +169,16 @@ export const useEndpoints = ({
               AzureAssistantsOldEndpoint,
               alternateName[AzureAssistantsOldEndpoint] || AzureAssistantsOldEndpoint,
               azureAssistantsOld,
+            ),
+          );
+        }
+
+        if (isAzureAssistantsVariantEnabled(endpointsConfig, AzureNewFoundryAssistantsEndpoint)) {
+          azureAssistantVariants.push(
+            buildAssistantEndpoint(
+              AzureNewFoundryAssistantsEndpoint,
+              alternateName[AzureNewFoundryAssistantsEndpoint] || AzureNewFoundryAssistantsEndpoint,
+              azureNewFoundryAssistants,
             ),
           );
         }
