@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { MCPIcon, AttachmentIcon, OpenAIMinimalIcon } from '@librechat/client';
+import { MCPIcon, AttachmentIcon, OpenAIMinimalIcon, Sparkles } from '@librechat/client';
 import {
   Bot,
   Brain,
@@ -14,6 +14,9 @@ import {
   PermissionTypes,
   isParamEndpoint,
   isAgentsEndpoint,
+  AzureAssistantsNewEndpoint,
+  AzureAssistantsOldEndpoint,
+  AzureNewFoundryAssistantsEndpoint,
 } from 'librechat-data-provider';
 import type { TInterfaceConfig, TEndpointsConfig } from 'librechat-data-provider';
 import type { NavLink } from '~/common';
@@ -103,10 +106,20 @@ export default function useSideNavLinks({
           endpointsConfig[EModelEndpoint.azureAssistants].disableBuilder !== true)) &&
       keyProvided
     ) {
+      const assistantNavIconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+        [AzureAssistantsNewEndpoint]: ({ className }) =>
+          Sparkles({ className: `text-blue-500 ${className ?? ''}` }),
+        [AzureAssistantsOldEndpoint]: ({ className }) =>
+          Sparkles({ className: `text-violet-500 ${className ?? ''}` }),
+        [AzureNewFoundryAssistantsEndpoint]: ({ className }) =>
+          Sparkles({ className: `text-emerald-500 ${className ?? ''}` }),
+      };
+      const AssistantNavIcon = assistantNavIconMap[endpoint ?? ''] ?? OpenAIMinimalIcon;
+
       links.push({
         title: 'com_sidepanel_assistant_builder',
         label: '',
-        icon: OpenAIMinimalIcon,
+        icon: AssistantNavIcon,
         id: EModelEndpoint.assistants,
         Component: PanelSwitch,
       });
