@@ -127,5 +127,8 @@
     "undici": "^7.24.1",
     "yauzl": "^3.2.1",
     "zod": "^3.22.4"
+  },
+  "dependencies": {
+    "@azure/ai-projects": "^2.0.2"
   }
 }

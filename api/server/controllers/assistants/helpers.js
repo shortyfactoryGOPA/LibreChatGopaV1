@@ -4,6 +4,7 @@ const {
   defaultAssistantsVersion,
   AzureAssistantsNewEndpoint,
   AzureAssistantsOldEndpoint,
+  AzureNewFoundryAssistantsEndpoint,
   isAzureAssistantsVariantEnabled,
   resolveAssistantsConfigEndpoint,
 } = require('librechat-data-provider');
@@ -11,6 +12,7 @@ const { logger, SystemCapabilities } = require('@librechat/data-schemas');
 const {
   isFoundryAgentsConfigured,
   listFoundryAgents,
+  listNewFoundryAgents,
 } = require('@librechat/api');
 const {
   initializeClient: initAzureClient,
@@ -37,6 +39,8 @@ const createAzureAssistantsDisabledError = (endpoint) => {
     label = 'Azure Assistants New';
   } else if (endpoint === AzureAssistantsOldEndpoint) {
     label = 'Azure Assistants Old';
+  } else if (endpoint === AzureNewFoundryAssistantsEndpoint) {
+    label = 'Azure AI Foundry NEW';
   }
 
   const error = new Error(`${label} is disabled.`);
@@ -52,7 +56,8 @@ const resolveAzureAssistantsEndpoint = async ({ req, endpoint }) => {
   if (
     endpoint !== EModelEndpoint.azureAssistants &&
     endpoint !== AzureAssistantsNewEndpoint &&
-    endpoint !== AzureAssistantsOldEndpoint
+    endpoint !== AzureAssistantsOldEndpoint &&
+    endpoint !== AzureNewFoundryAssistantsEndpoint
   ) {
     return endpoint;
   }
@@ -66,6 +71,10 @@ const resolveAzureAssistantsEndpoint = async ({ req, endpoint }) => {
     endpointsConfig,
     AzureAssistantsOldEndpoint,
   );
+  const enableNewFoundry = isAzureAssistantsVariantEnabled(
+    endpointsConfig,
+    AzureNewFoundryAssistantsEndpoint,
+  );
 
   if (endpoint === AzureAssistantsNewEndpoint) {
     return enableNewAssistants ? AzureAssistantsNewEndpoint : null;
@@ -73,6 +82,10 @@ const resolveAzureAssistantsEndpoint = async ({ req, endpoint }) => {
 
   if (endpoint === AzureAssistantsOldEndpoint) {
     return enableOldAssistants ? AzureAssistantsOldEndpoint : null;
+  }
+
+  if (endpoint === AzureNewFoundryAssistantsEndpoint) {
+    return enableNewFoundry && isFoundryAgentsConfigured() ? AzureNewFoundryAssistantsEndpoint : null;
   }
 
   if (enableNewAssistants && isFoundryAgentsConfigured()) {
@@ -336,6 +349,8 @@ const fetchAssistants = async ({ req, res, overrideEndpoint }) => {
     ({ body } = await listAllAssistants({ req, res, version, query }));
   } else if (resolvedEndpoint === AzureAssistantsNewEndpoint) {
     body = await listFoundryAgents(query);
+  } else if (resolvedEndpoint === AzureNewFoundryAssistantsEndpoint) {
+    body = await listNewFoundryAgents();
   } else if (isLegacyAzureAssistantsEndpoint(resolvedEndpoint)) {
     const azureConfig = appConfig.endpoints?.[EModelEndpoint.azureOpenAI];
     body = await listAssistantsForAzure({ req, res, version, azureConfig, query });
