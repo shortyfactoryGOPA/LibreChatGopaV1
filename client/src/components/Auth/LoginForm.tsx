@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Turnstile } from '@marsidev/react-turnstile';
 import { ThemeContext, Spinner, Button, isDark } from '@librechat/client';
@@ -28,6 +28,8 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
   const [termsError, setTermsError] = useState<string | null>(null);
   const [showResendLink, setShowResendLink] = useState<boolean>(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const { data: config } = useGetStartupConfig();
   const useUsernameLogin = config?.ldap?.username;
@@ -46,10 +48,38 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
     }
   }, [error, showResendLink]);
 
+  const startCooldown = useCallback(() => {
+    setResendCooldown(60);
+    cooldownRef.current = setInterval(() => {
+      setResendCooldown((prev) => {
+        if (prev <= 1) {
+          if (cooldownRef.current) {
+            clearInterval(cooldownRef.current);
+            cooldownRef.current = null;
+          }
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (cooldownRef.current) {
+        clearInterval(cooldownRef.current);
+      }
+    };
+  }, []);
+
   const resendLinkMutation = useResendVerificationEmail({
     onMutate: () => {
       setError(undefined);
       setShowResendLink(false);
+    },
+    onSuccess: () => {
+      setShowResendLink(true);
+      startCooldown();
     },
   });
 
@@ -81,11 +111,13 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
           {localize('com_auth_email_verification_resend_prompt')}
           <button
             type="button"
-            className="ml-2 text-blue-600 hover:underline"
+            className="ml-2 text-blue-600 hover:underline disabled:cursor-not-allowed disabled:opacity-50"
             onClick={handleResendEmail}
-            disabled={resendLinkMutation.isLoading}
+            disabled={resendLinkMutation.isLoading || resendCooldown > 0}
           >
-            {localize('com_auth_email_resend_link')}
+            {resendCooldown > 0
+              ? localize('com_auth_email_resend_cooldown', resendCooldown.toString())
+              : localize('com_auth_email_resend_link')}
           </button>
         </div>
       )}

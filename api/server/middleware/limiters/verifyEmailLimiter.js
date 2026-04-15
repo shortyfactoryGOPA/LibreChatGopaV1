@@ -25,14 +25,29 @@ const handler = async (req, res) => {
   return res.status(429).json({ message });
 };
 
-const limiterOptions = {
+const ipLimiter = rateLimit({
   windowMs,
   max,
   handler,
   keyGenerator: removePorts,
   store: limiterCache('verify_email_limiter'),
+});
+
+const emailKeyGenerator = (req) => {
+  const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+  return `email:${email}`;
 };
 
-const verifyEmailLimiter = rateLimit(limiterOptions);
+const emailLimiter = rateLimit({
+  windowMs,
+  max,
+  handler,
+  keyGenerator: emailKeyGenerator,
+  store: limiterCache('verify_email_email_limiter'),
+});
+
+const verifyEmailLimiter = (req, res, next) => {
+  ipLimiter(req, res, () => emailLimiter(req, res, next));
+};
 
 module.exports = verifyEmailLimiter;
