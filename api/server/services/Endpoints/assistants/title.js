@@ -1,4 +1,5 @@
-const { isEnabled, sanitizeTitle } = require('@librechat/api');
+const { AIProjectClient } = require('@azure/ai-projects');
+const { isEnabled, sanitizeTitle, getFoundryProjectEndpoint, getFoundryTokenCredential } = require('@librechat/api');
 const { logger } = require('@librechat/data-schemas');
 const { CacheKeys } = require('librechat-data-provider');
 const getLogStores = require('~/cache/getLogStores');
@@ -6,14 +7,15 @@ const initializeClient = require('./initalize');
 const { saveConvo } = require('~/models');
 
 /**
- * Generates a conversation title using OpenAI SDK
+ * Generates a conversation title using an OpenAI-compatible client.
  * @param {Object} params
- * @param {OpenAI} params.openai - The OpenAI SDK client instance
- * @param {string} params.text - User's message text
- * @param {string} params.responseText - Assistant's response text
+ * @param {import('openai')} params.openai
+ * @param {string} params.text
+ * @param {string} params.responseText
+ * @param {string} [params.model]
  * @returns {Promise<string>}
  */
-const generateTitle = async ({ openai, text, responseText }) => {
+const generateTitle = async ({ openai, text, responseText, model = 'gpt-3.5-turbo' }) => {
   const titlePrompt = `Please generate a concise title (max 40 characters) for a conversation that starts with:
 User: ${text}
 Assistant: ${responseText}
@@ -21,13 +23,8 @@ Assistant: ${responseText}
 Title:`;
 
   const completion = await openai.chat.completions.create({
-    model: 'gpt-3.5-turbo',
-    messages: [
-      {
-        role: 'user',
-        content: titlePrompt,
-      },
-    ],
+    model,
+    messages: [{ role: 'user', content: titlePrompt }],
     temperature: 0.7,
     max_tokens: 20,
   });
@@ -37,20 +34,21 @@ Title:`;
 };
 
 /**
- * Adds a title to a conversation asynchronously
+ * Adds a title to a conversation asynchronously.
+ * Falls back to the Foundry project endpoint when standard assistants init fails.
  * @param {ServerRequest} req
  * @param {Object} params
- * @param {string} params.text - User's message text
- * @param {string} params.responseText - Assistant's response text
- * @param {string} params.conversationId - Conversation ID
+ * @param {string} params.text
+ * @param {string} params.responseText
+ * @param {string} params.conversationId
+ * @param {string} [params.model] - Agent model deployment name (used for Foundry fallback)
  */
-const addTitle = async (req, { text, responseText, conversationId }) => {
+const addTitle = async (req, { text, responseText, conversationId, model: agentModel }) => {
   const { TITLE_CONVO = 'true' } = process.env ?? {};
   if (!isEnabled(TITLE_CONVO)) {
     return;
   }
 
-  // Skip title generation for temporary conversations
   if (req?.body?.isTemporary) {
     return;
   }
@@ -58,40 +56,41 @@ const addTitle = async (req, { text, responseText, conversationId }) => {
   const titleCache = getLogStores(CacheKeys.GEN_TITLE);
   const key = `${req.user.id}-${conversationId}`;
 
-  try {
-    const { openai } = await initializeClient({ req });
-    const title = await generateTitle({ openai, text, responseText });
+  const saveTitle = async (title) => {
     await titleCache.set(key, title, 120000);
-
-    const reqCtx = {
-      userId: req?.user?.id,
-      isTemporary: req?.body?.isTemporary,
-      interfaceConfig: req?.config?.interfaceConfig,
-    };
-    await saveConvo(
-      reqCtx,
-      {
-        conversationId,
-        title,
-      },
-      { context: 'api/server/services/Endpoints/assistants/addTitle.js', noUpsert: true },
-    );
-  } catch (error) {
-    logger.error('[addTitle] Error generating title:', error);
-    const fallbackTitle = text.length > 40 ? text.substring(0, 37) + '...' : text;
-    await titleCache.set(key, fallbackTitle, 120000);
     await saveConvo(
       {
         userId: req?.user?.id,
         isTemporary: req?.body?.isTemporary,
         interfaceConfig: req?.config?.interfaceConfig,
       },
-      {
-        conversationId,
-        title: fallbackTitle,
-      },
-      { context: 'api/server/services/Endpoints/assistants/addTitle.js', noUpsert: true },
+      { conversationId, title },
+      { context: 'api/server/services/Endpoints/assistants/title.js', noUpsert: true },
     );
+  };
+
+  try {
+    let openai, model;
+
+    try {
+      ({ openai } = await initializeClient({ req }));
+      model = 'gpt-3.5-turbo';
+    } catch {
+      const foundryEndpoint = getFoundryProjectEndpoint();
+      if (!foundryEndpoint || !agentModel) {
+        throw new Error('No suitable client for title generation');
+      }
+      const projectClient = new AIProjectClient(foundryEndpoint, getFoundryTokenCredential());
+      openai = projectClient.getOpenAIClient();
+      model = agentModel;
+    }
+
+    const title = await generateTitle({ openai, text, responseText, model });
+    await saveTitle(title);
+  } catch (error) {
+    logger.error('[addTitle] Error generating title:', error);
+    const fallbackTitle = text.length > 40 ? text.substring(0, 37) + '...' : text;
+    await saveTitle(fallbackTitle);
   }
 };
 
