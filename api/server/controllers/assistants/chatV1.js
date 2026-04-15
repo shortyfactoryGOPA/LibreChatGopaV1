@@ -374,6 +374,7 @@ const chatV1 = async (req, res) => {
 
       completedRun = true;
       thread_id = foundryResult.threadId;
+      requestMessage.thread_id = thread_id;
 
       const foundryResponseMessage = {
         messageId: responseMessageId,
@@ -392,7 +393,8 @@ const chatV1 = async (req, res) => {
       sendEvent(res, {
         final: true,
         conversation: { ...conversation, thread_id },
-        requestMessage: { parentMessageId, thread_id },
+        requestMessage,
+        responseMessage: foundryResponseMessage,
       });
       res.end();
 
@@ -466,6 +468,7 @@ const chatV1 = async (req, res) => {
 
       completedRun = true;
       thread_id = newFoundryResult.threadId;
+      requestMessage.thread_id = thread_id;
 
       const newFoundryResponseMessage = {
         messageId: responseMessageId,
@@ -484,7 +487,8 @@ const chatV1 = async (req, res) => {
       sendEvent(res, {
         final: true,
         conversation: { ...conversation, thread_id },
-        requestMessage: { parentMessageId, thread_id },
+        requestMessage,
+        responseMessage: newFoundryResponseMessage,
       });
       res.end();
 
