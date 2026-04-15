@@ -100,6 +100,56 @@ cd packages/client && npm run build
 
 ---
 
+## Docker — Services locaux
+
+En mode dev local, le backend tourne avec `npm run backend:dev` mais certains services dépendent de Docker.
+
+### Démarrer les services Docker nécessaires
+
+```bash
+# RAG API + base vectorielle (requis pour l'upload de fichiers)
+docker-compose up rag_api vectordb -d
+
+# Tous les services Docker (MongoDB, Meilisearch, RAG, vectordb)
+docker-compose up mongodb meilisearch rag_api vectordb -d
+```
+
+### Commandes Docker utiles
+
+```bash
+# Voir les containers qui tournent
+docker ps
+
+# Voir les logs d'un service
+docker logs rag_api -f
+docker logs chat-mongodb -f
+
+# Arrêter tous les services Docker du projet
+docker-compose down
+
+# Rebuild et redémarrer un service après changement de config
+docker-compose up rag_api -d --build
+
+# Recharger nginx sans downtime (prod)
+docker exec LibreChat-NGINX nginx -s reload
+
+# Vérifier la config nginx
+docker exec LibreChat-NGINX nginx -t
+```
+
+### Ports
+
+| Service | Port local |
+|---|---|
+| Backend Express | 3080 |
+| Frontend Vite (dev) | 3090 |
+| RAG API | 8001 |
+| MongoDB | 27017 |
+| Meilisearch | 7700 |
+| pgvector | 5432 |
+
+---
+
 ## Tests
 
 ```bash
