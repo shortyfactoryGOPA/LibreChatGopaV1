@@ -258,8 +258,13 @@ const chatV1 = async (req, res) => {
     });
 
     if (convoId && !_thread_id) {
-      completedRun = true;
-      throw new Error('Missing thread_id for existing conversation');
+      const existingConvo = await getConvo(req.user.id, convoId);
+      if (existingConvo?.thread_id) {
+        thread_id = existingConvo.thread_id;
+      } else {
+        completedRun = true;
+        throw new Error('Missing thread_id for existing conversation');
+      }
     }
 
     if (!assistant_id) {
@@ -361,7 +366,7 @@ const chatV1 = async (req, res) => {
       const foundryResult = await chatWithFoundryAgent({
         text,
         assistantId: assistant_id,
-        threadId: _thread_id,
+        threadId: thread_id,
         instructions: instructions || null,
         additionalInstructions: promptPrefix || null,
         attachments: files.map(({ file_id }) => ({ file_id })),
@@ -455,7 +460,7 @@ const chatV1 = async (req, res) => {
       const newFoundryResult = await chatWithNewFoundryAgent({
         text,
         assistantId: assistant_id,
-        threadId: _thread_id,
+        threadId: thread_id,
         instructions: instructions || null,
       });
 
