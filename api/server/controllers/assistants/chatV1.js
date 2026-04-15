@@ -259,9 +259,21 @@ const chatV1 = async (req, res) => {
 
     if (convoId && !_thread_id) {
       const existingConvo = await getConvo(req.user.id, convoId);
-      if (existingConvo?.thread_id) {
-        thread_id = existingConvo.thread_id;
-      } else {
+      const dbThreadId = existingConvo?.thread_id;
+      const isFoundryEndpoint =
+        endpoint === AzureAssistantsNewEndpoint || endpoint === AzureNewFoundryAssistantsEndpoint;
+      if (dbThreadId) {
+        // Validate thread_id format matches the endpoint type to avoid cross-contamination
+        // (e.g. resp_ IDs from Responses API must not be passed to classic threads/runs API)
+        const validForEndpoint =
+          endpoint === AzureNewFoundryAssistantsEndpoint
+            ? !dbThreadId.startsWith('thread_')
+            : dbThreadId.startsWith('thread_');
+        if (validForEndpoint) {
+          thread_id = dbThreadId;
+        }
+        // If format doesn't match: thread_id stays null, Foundry endpoints create a new thread
+      } else if (!isFoundryEndpoint) {
         completedRun = true;
         throw new Error('Missing thread_id for existing conversation');
       }
