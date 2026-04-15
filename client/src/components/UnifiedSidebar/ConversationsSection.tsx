@@ -24,7 +24,7 @@ const ConversationsSection = memo(() => {
   const isSmallScreen = useMediaQuery('(max-width: 768px)');
   const setSidebarExpanded = useSetRecoilState(store.sidebarExpanded);
   const { isAuthenticated } = useAuthContext();
-  useTitleGeneration(isAuthenticated);
+  const { pendingTitleIds } = useTitleGeneration(isAuthenticated);
 
   const [isChatsExpanded, setIsChatsExpanded] = useLocalStorage('chatsExpanded', true);
   const [showLoading, setShowLoading] = useState(false);
@@ -127,6 +127,7 @@ const ConversationsSection = memo(() => {
           isSearchLoading={isSearchLoading}
           isChatsExpanded={isChatsExpanded}
           setIsChatsExpanded={setIsChatsExpanded}
+          pendingTitleIds={pendingTitleIds}
         />
       </div>
     </div>

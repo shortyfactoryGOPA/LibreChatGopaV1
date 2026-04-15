@@ -60,8 +60,9 @@ export function queueTitleGeneration(conversationId: string) {
  * Hook to process the title generation queue.
  * Only fetches titles AFTER the job completes (not in activeJobIds).
  * Place this high in the component tree (e.g., Nav.tsx).
+ * Returns pendingTitleIds — conversationIds currently awaiting title fetch.
  */
-export function useTitleGeneration(enabled = true) {
+export function useTitleGeneration(enabled = true): { pendingTitleIds: Set<string> } {
   const queryClient = useQueryClient();
   const [queueVersion, setQueueVersion] = useState(0);
   const [readyToFetch, setReadyToFetch] = useState<string[]>([]);
@@ -132,6 +133,8 @@ export function useTitleGeneration(enabled = true) {
       }
     });
   }, [titleQueries, readyToFetch, queryClient]);
+
+  return { pendingTitleIds: new Set(readyToFetch) };
 }
 
 /**

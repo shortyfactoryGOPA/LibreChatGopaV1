@@ -427,7 +427,7 @@ const chatV1 = async (req, res) => {
       await saveAssistantMessage(req, { ...foundryResponseMessage, model });
 
       if (parentMessageId === Constants.NO_PARENT && !_thread_id) {
-        addTitle(req, { text, responseText: foundryResult.responseText, conversationId, model: foundryResult.model });
+        addTitle(req, { text, responseText: foundryResult.responseText, conversationId, model: foundryResult.model, endpoint });
       }
 
       if (foundryResult.usage) {
@@ -521,7 +521,7 @@ const chatV1 = async (req, res) => {
       await saveAssistantMessage(req, { ...newFoundryResponseMessage, model });
 
       if (parentMessageId === Constants.NO_PARENT && !_thread_id) {
-        addTitle(req, { text, responseText: newFoundryResult.responseText, conversationId, model: newFoundryResult.model });
+        addTitle(req, { text, responseText: newFoundryResult.responseText, conversationId, model: newFoundryResult.model, endpoint });
       }
 
       if (newFoundryResult.usage) {

@@ -1,7 +1,7 @@
 const { AIProjectClient } = require('@azure/ai-projects');
 const { isEnabled, sanitizeTitle, getFoundryProjectEndpoint, getFoundryTokenCredential } = require('@librechat/api');
 const { logger } = require('@librechat/data-schemas');
-const { CacheKeys } = require('librechat-data-provider');
+const { CacheKeys, AzureAssistantsNewEndpoint, AzureNewFoundryAssistantsEndpoint } = require('librechat-data-provider');
 const getLogStores = require('~/cache/getLogStores');
 const initializeClient = require('./initalize');
 const { saveConvo } = require('~/models');
@@ -51,15 +51,16 @@ const generateTitleWithResponses = async ({ openai, text, responseText, model })
 
 /**
  * Adds a title to a conversation asynchronously.
- * Falls back to the Foundry project endpoint when standard assistants init fails.
+ * For Foundry endpoints, uses the Responses API directly (skips initializeClient).
  * @param {ServerRequest} req
  * @param {Object} params
  * @param {string} params.text
  * @param {string} params.responseText
  * @param {string} params.conversationId
- * @param {string} [params.model] - Agent model deployment name (used for Foundry fallback)
+ * @param {string} [params.model] - Agent model deployment name (used for Foundry endpoints)
+ * @param {string} [params.endpoint] - Endpoint type to select title generation strategy
  */
-const addTitle = async (req, { text, responseText, conversationId, model: agentModel }) => {
+const addTitle = async (req, { text, responseText, conversationId, model: agentModel, endpoint }) => {
   const { TITLE_CONVO = 'true' } = process.env ?? {};
   if (!isEnabled(TITLE_CONVO)) {
     return;
@@ -85,24 +86,35 @@ const addTitle = async (req, { text, responseText, conversationId, model: agentM
     );
   };
 
-  try {
-    try {
-      const { openai } = await initializeClient({ req });
-      const title = await generateTitle({ openai, text, responseText });
-      await saveTitle(title);
-      return;
-    } catch {
-      // fall through to Foundry fallback
-    }
+  const isFoundryEndpoint =
+    endpoint === AzureAssistantsNewEndpoint || endpoint === AzureNewFoundryAssistantsEndpoint;
 
-    const foundryEndpoint = getFoundryProjectEndpoint();
-    if (!foundryEndpoint || !agentModel) {
-      throw new Error('No suitable client for title generation');
+  try {
+    if (isFoundryEndpoint) {
+      const foundryEndpoint = getFoundryProjectEndpoint();
+      if (!foundryEndpoint || !agentModel) {
+        throw new Error('No suitable client for Foundry title generation');
+      }
+      const projectClient = new AIProjectClient(foundryEndpoint, getFoundryTokenCredential());
+      const openai = projectClient.getOpenAIClient();
+      const title = await generateTitleWithResponses({ openai, text, responseText, model: agentModel });
+      await saveTitle(title);
+    } else {
+      try {
+        const { openai } = await initializeClient({ req });
+        const title = await generateTitle({ openai, text, responseText });
+        await saveTitle(title);
+      } catch {
+        const foundryEndpoint = getFoundryProjectEndpoint();
+        if (!foundryEndpoint || !agentModel) {
+          throw new Error('No suitable client for title generation');
+        }
+        const projectClient = new AIProjectClient(foundryEndpoint, getFoundryTokenCredential());
+        const openai = projectClient.getOpenAIClient();
+        const title = await generateTitleWithResponses({ openai, text, responseText, model: agentModel });
+        await saveTitle(title);
+      }
     }
-    const projectClient = new AIProjectClient(foundryEndpoint, getFoundryTokenCredential());
-    const openai = projectClient.getOpenAIClient();
-    const title = await generateTitleWithResponses({ openai, text, responseText, model: agentModel });
-    await saveTitle(title);
   } catch (error) {
     logger.error('[addTitle] Error generating title:', error);
     const fallbackTitle = text.length > 40 ? text.substring(0, 37) + '...' : text;
