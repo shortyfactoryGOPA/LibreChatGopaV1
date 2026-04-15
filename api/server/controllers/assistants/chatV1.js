@@ -257,6 +257,19 @@ const chatV1 = async (req, res) => {
       }
     });
 
+    // Discard thread_id if its format doesn't match the current endpoint type.
+    // Prevents cross-endpoint contamination when a user switches between classic Foundry
+    // (thread_xxx IDs) and new Foundry / Responses API (resp_xxx IDs) within a session.
+    if (thread_id) {
+      const validForEndpoint =
+        endpoint === AzureNewFoundryAssistantsEndpoint
+          ? !thread_id.startsWith('thread_')
+          : thread_id.startsWith('thread_');
+      if (!validForEndpoint) {
+        thread_id = null;
+      }
+    }
+
     if (convoId && !_thread_id) {
       const existingConvo = await getConvo(req.user.id, convoId);
       const dbThreadId = existingConvo?.thread_id;
