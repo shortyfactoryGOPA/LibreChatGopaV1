@@ -6,8 +6,11 @@ const getLogStores = require('~/cache/getLogStores');
 const initializeClient = require('./initalize');
 const { saveConvo } = require('~/models');
 
+const buildTitlePrompt = (text, responseText) =>
+  `Please generate a concise title (max 40 characters) for a conversation that starts with:\nUser: ${text}\nAssistant: ${responseText}\n\nTitle:`;
+
 /**
- * Generates a conversation title using an OpenAI-compatible client.
+ * Generates a conversation title using an OpenAI-compatible chat completions client.
  * @param {Object} params
  * @param {import('openai')} params.openai
  * @param {string} params.text
@@ -16,20 +19,33 @@ const { saveConvo } = require('~/models');
  * @returns {Promise<string>}
  */
 const generateTitle = async ({ openai, text, responseText, model = 'gpt-3.5-turbo' }) => {
-  const titlePrompt = `Please generate a concise title (max 40 characters) for a conversation that starts with:
-User: ${text}
-Assistant: ${responseText}
-
-Title:`;
-
   const completion = await openai.chat.completions.create({
     model,
-    messages: [{ role: 'user', content: titlePrompt }],
+    messages: [{ role: 'user', content: buildTitlePrompt(text, responseText) }],
     temperature: 0.7,
     max_tokens: 20,
   });
 
   const title = completion.choices[0]?.message?.content?.trim() || 'New conversation';
+  return sanitizeTitle(title);
+};
+
+/**
+ * Generates a conversation title using the Foundry Responses API.
+ * @param {Object} params
+ * @param {import('openai')} params.openai
+ * @param {string} params.text
+ * @param {string} params.responseText
+ * @param {string} params.model
+ * @returns {Promise<string>}
+ */
+const generateTitleWithResponses = async ({ openai, text, responseText, model }) => {
+  const response = await openai.responses.create({
+    model,
+    input: buildTitlePrompt(text, responseText),
+  });
+
+  const title = response.output_text?.trim() || 'New conversation';
   return sanitizeTitle(title);
 };
 
@@ -70,22 +86,22 @@ const addTitle = async (req, { text, responseText, conversationId, model: agentM
   };
 
   try {
-    let openai, model;
-
     try {
-      ({ openai } = await initializeClient({ req }));
-      model = 'gpt-3.5-turbo';
+      const { openai } = await initializeClient({ req });
+      const title = await generateTitle({ openai, text, responseText });
+      await saveTitle(title);
+      return;
     } catch {
-      const foundryEndpoint = getFoundryProjectEndpoint();
-      if (!foundryEndpoint || !agentModel) {
-        throw new Error('No suitable client for title generation');
-      }
-      const projectClient = new AIProjectClient(foundryEndpoint, getFoundryTokenCredential());
-      openai = projectClient.getOpenAIClient();
-      model = agentModel;
+      // fall through to Foundry fallback
     }
 
-    const title = await generateTitle({ openai, text, responseText, model });
+    const foundryEndpoint = getFoundryProjectEndpoint();
+    if (!foundryEndpoint || !agentModel) {
+      throw new Error('No suitable client for title generation');
+    }
+    const projectClient = new AIProjectClient(foundryEndpoint, getFoundryTokenCredential());
+    const openai = projectClient.getOpenAIClient();
+    const title = await generateTitleWithResponses({ openai, text, responseText, model: agentModel });
     await saveTitle(title);
   } catch (error) {
     logger.error('[addTitle] Error generating title:', error);

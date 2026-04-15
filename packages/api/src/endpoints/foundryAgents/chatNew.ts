@@ -76,7 +76,7 @@ export async function chatWithNewFoundryAgent({
 
   return {
     runId: response.id,
-    model: response.model,
+    model: modelDeployment,
     threadId: response.id,
     assistantId,
     responseText,
