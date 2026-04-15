@@ -1,5 +1,10 @@
 import { Feather } from 'lucide-react';
-import { EModelEndpoint } from 'librechat-data-provider';
+import {
+  EModelEndpoint,
+  AzureAssistantsNewEndpoint,
+  AzureAssistantsOldEndpoint,
+  AzureNewFoundryAssistantsEndpoint,
+} from 'librechat-data-provider';
 import {
   GPTIcon,
   Sparkles,
@@ -13,6 +18,27 @@ import {
 import type { IconMapProps, AgentIconMapProps, IconsRecord } from '~/common';
 import UnknownIcon from './UnknownIcon';
 import { cn } from '~/utils';
+
+const makeAssistantAvatar =
+  (colorClass: string) =>
+  ({ className = '', assistantName = '', avatar = '', context, size }: IconMapProps) => {
+    if (assistantName && avatar) {
+      return (
+        <img
+          src={avatar}
+          className="bg-token-surface-secondary dark:bg-token-surface-tertiary h-full w-full rounded-full object-cover"
+          alt={assistantName}
+          width="80"
+          height="80"
+        />
+      );
+    } else if (assistantName) {
+      return (
+        <AssistantIcon className={cn(colorClass, className)} size={size} />
+      );
+    }
+    return <Sparkles className={cn(colorClass, context === 'landing' ? 'icon-2xl' : '', className)} />;
+  };
 
 const AssistantAvatar = ({
   className = '',
@@ -66,6 +92,9 @@ export const icons: IconsRecord = {
   [EModelEndpoint.custom]: CustomMinimalIcon,
   [EModelEndpoint.assistants]: AssistantAvatar,
   [EModelEndpoint.azureAssistants]: AssistantAvatar,
+  [AzureAssistantsNewEndpoint]: makeAssistantAvatar('text-blue-500'),
+  [AzureAssistantsOldEndpoint]: makeAssistantAvatar('text-violet-500'),
+  [AzureNewFoundryAssistantsEndpoint]: makeAssistantAvatar('text-emerald-500'),
   [EModelEndpoint.agents]: AgentAvatar,
   [EModelEndpoint.bedrock]: Bedrock,
   unknown: UnknownIcon,

@@ -1,6 +1,13 @@
 import { memo } from 'react';
 import { Feather } from 'lucide-react';
-import { EModelEndpoint, isAssistantsEndpoint, alternateName } from 'librechat-data-provider';
+import {
+  EModelEndpoint,
+  isAssistantsEndpoint,
+  alternateName,
+  AzureAssistantsNewEndpoint,
+  AzureAssistantsOldEndpoint,
+  AzureNewFoundryAssistantsEndpoint,
+} from 'librechat-data-provider';
 import {
   Plugin,
   GPTIcon,
@@ -117,12 +124,41 @@ const MessageEndpointIcon: React.FC<IconProps> = (props) => {
     name: endpoint,
   };
 
+  const makeColoredAssistantsIcon = (colorClass: string): EndpointIcon => ({
+    icon: iconURL ? (
+      <div className="relative flex h-6 w-6 items-center justify-center">
+        <div
+          title={assistantName}
+          style={{ width: size, height: size }}
+          className={cn('overflow-hidden rounded-full', props.className ?? '')}
+        >
+          <img
+            className="shadow-stroke h-full w-full object-cover"
+            src={iconURL}
+            alt={assistantName}
+            style={{ height: '80', width: '80' }}
+          />
+        </div>
+      </div>
+    ) : (
+      <div className="h-6 w-6">
+        <div className="shadow-stroke flex h-6 w-6 items-center justify-center overflow-hidden rounded-full">
+          <AssistantIcon className={cn('h-2/3 w-2/3', colorClass)} />
+        </div>
+      </div>
+    ),
+    name: endpoint,
+  });
+
   const endpointIcons: {
     [key: string]: EndpointIcon | undefined;
   } = {
     [EModelEndpoint.assistants]: assistantsIcon,
     [EModelEndpoint.agents]: agentsIcon,
     [EModelEndpoint.azureAssistants]: assistantsIcon,
+    [AzureAssistantsNewEndpoint]: makeColoredAssistantsIcon('text-blue-500'),
+    [AzureAssistantsOldEndpoint]: makeColoredAssistantsIcon('text-violet-500'),
+    [AzureNewFoundryAssistantsEndpoint]: makeColoredAssistantsIcon('text-emerald-500'),
     [EModelEndpoint.azureOpenAI]: {
       icon: <AzureMinimalIcon size={size * 0.5555555555555556} />,
       bg: 'linear-gradient(0.375turn, #61bde2, #4389d0)',

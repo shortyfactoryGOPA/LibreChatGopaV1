@@ -102,12 +102,8 @@ export const useEndpoints = ({
         EModelEndpoint.azureAssistants,
         'type',
       );
-      const iconKey = getIconKey({
-        endpoint: EModelEndpoint.azureAssistants,
-        endpointsConfig,
-        endpointType,
-      });
-      const Icon = icons[iconKey];
+      const iconKey = getIconKey({ endpoint: value, endpointsConfig, endpointType });
+      const Icon = icons[iconKey] ?? icons[EModelEndpoint.azureAssistants];
       const endpointIconURL = getEndpointField(
         endpointsConfig,
         EModelEndpoint.azureAssistants,
