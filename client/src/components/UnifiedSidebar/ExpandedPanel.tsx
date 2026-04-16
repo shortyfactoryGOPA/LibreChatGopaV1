@@ -1,8 +1,8 @@
-import { memo, useCallback, lazy, Suspense } from 'react';
+import { memo, useCallback, useEffect, lazy, Suspense } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRecoilValue } from 'recoil';
 import { SquarePen } from 'lucide-react';
-import { QueryKeys } from 'librechat-data-provider';
+import { EModelEndpoint, QueryKeys } from 'librechat-data-provider';
 import { Skeleton, Sidebar, Button, TooltipAnchor } from '@librechat/client';
 import type { NavLink } from '~/common';
 import { CLOSE_SIDEBAR_ID } from '~/components/Chat/Menus/OpenSidebar';
@@ -118,6 +118,15 @@ function ExpandedPanel({
   const localize = useLocalize();
   const { active, setActive } = useActivePanel();
   const effectiveActive = resolveActivePanel(active, links);
+
+  useEffect(() => {
+    const handleOpenAgentPanel = () => {
+      setActive(EModelEndpoint.agents);
+      onExpand?.();
+    };
+    window.addEventListener('open-agent-panel', handleOpenAgentPanel);
+    return () => window.removeEventListener('open-agent-panel', handleOpenAgentPanel);
+  }, [setActive, onExpand]);
 
   const toggleLabel = expanded ? 'com_nav_close_sidebar' : 'com_nav_open_sidebar';
   const toggleClick = expanded ? onCollapse : onExpand;

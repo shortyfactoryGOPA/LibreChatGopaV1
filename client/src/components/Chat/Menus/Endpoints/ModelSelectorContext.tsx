@@ -229,6 +229,10 @@ export function ModelSelectorProvider({ children, startupConfig }: ModelSelector
   const handleSelectEndpoint = useCallback(
     (endpoint: Endpoint) => {
       if (!endpoint.hasModels) {
+        if (isAgentsEndpoint(endpoint.value)) {
+          window.dispatchEvent(new CustomEvent('open-agent-panel'));
+          return;
+        }
         if (endpoint.value) {
           onSelectEndpoint?.(endpoint.value);
         }
