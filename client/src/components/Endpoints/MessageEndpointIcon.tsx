@@ -155,7 +155,7 @@ const MessageEndpointIcon: React.FC<IconProps> = (props) => {
     [EModelEndpoint.azureAssistants]: assistantsIcon,
     [AzureAssistantsNewEndpoint]: makeColoredAssistantsIcon('text-blue-500'),
     [AzureAssistantsOldEndpoint]: makeColoredAssistantsIcon('text-violet-500'),
-    [AzureNewFoundryAssistantsEndpoint]: makeColoredAssistantsIcon('text-emerald-500'),
+    [AzureNewFoundryAssistantsEndpoint]: makeColoredAssistantsIcon('text-[#fcc200]'),
     [EModelEndpoint.azureOpenAI]: {
       icon: <AzureMinimalIcon size={size * 0.5555555555555556} />,
       bg: 'linear-gradient(0.375turn, #61bde2, #4389d0)',

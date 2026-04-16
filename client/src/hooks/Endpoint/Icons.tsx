@@ -90,7 +90,7 @@ export const icons: IconsRecord = {
   [EModelEndpoint.azureAssistants]: AssistantAvatar,
   [AzureAssistantsNewEndpoint]: makeAssistantAvatar('text-blue-500'),
   [AzureAssistantsOldEndpoint]: makeAssistantAvatar('text-violet-500'),
-  [AzureNewFoundryAssistantsEndpoint]: makeAssistantAvatar('text-emerald-500'),
+  [AzureNewFoundryAssistantsEndpoint]: makeAssistantAvatar('text-[#fcc200]'),
   [EModelEndpoint.agents]: AgentAvatar,
   [EModelEndpoint.bedrock]: Bedrock,
   unknown: UnknownIcon,
