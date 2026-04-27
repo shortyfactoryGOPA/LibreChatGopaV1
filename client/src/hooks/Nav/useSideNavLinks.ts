@@ -88,11 +88,21 @@ export default function useSideNavLinks({
       endpointsConfig[EModelEndpoint.agents].disableBuilder !== true
     ) {
       links.push({
-        title: 'com_sidepanel_agent_builder',
+        title: 'com_ui_agents',
         label: '',
         icon: Bot,
         id: EModelEndpoint.agents,
         Component: AgentPanelSwitch,
+      });
+    }
+
+    if (hasAccessToPrompts) {
+      links.push({
+        title: 'com_ui_prompts',
+        label: '',
+        icon: NotebookPen,
+        id: 'prompts',
+        Component: PromptsAccordion,
       });
     }
 
@@ -109,16 +119,6 @@ export default function useSideNavLinks({
         icon: Sparkles,
         id: EModelEndpoint.assistants,
         Component: PanelSwitch,
-      });
-    }
-
-    if (hasAccessToPrompts) {
-      links.push({
-        title: 'com_ui_prompts',
-        label: '',
-        icon: NotebookPen,
-        id: 'prompts',
-        Component: PromptsAccordion,
       });
     }
 

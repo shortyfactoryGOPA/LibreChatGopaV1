@@ -98,12 +98,16 @@ export default function useUnifiedSidebarLinks() {
       title: 'com_ui_admin',
       label: '',
       icon: ShieldCheck,
+      iconClassName: 'text-red-500',
       id: 'admin',
       Component: AdminNavPanel,
     };
 
-    const baseLinks = [conversationLink, ...sideNavLinks, deeplLink, sdgLink, guideLink];
-    return isAdmin ? [...baseLinks, adminLink] : baseLinks;
+    const topLinks = [conversationLink];
+    const toolLinks = [deeplLink, sdgLink];
+    const baseLinks = [...sideNavLinks, guideLink];
+    const mainLinks = isAdmin ? [...baseLinks, adminLink] : baseLinks;
+    return { links: [...topLinks, ...toolLinks, ...mainLinks], topLinks, toolLinks, mainLinks };
   }, [sideNavLinks, handleDeepLNavigate, handleSDGNavigate, handleGuideNavigate, isAdmin]);
 
   return links;

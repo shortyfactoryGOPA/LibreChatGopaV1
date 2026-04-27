@@ -47,7 +47,7 @@ function UnifiedSidebar() {
   const [isResizing, setIsResizing] = useState(false);
   const resizeHandlers = useRef<{ move: (e: MouseEvent) => void; up: () => void } | null>(null);
 
-  const links = useUnifiedSidebarLinks();
+  const { links, topLinks, toolLinks, mainLinks } = useUnifiedSidebarLinks();
 
   const handleCollapse = useCallback(() => {
     startTransition(() => {
@@ -148,7 +148,13 @@ function UnifiedSidebar() {
         >
           <SidebarChatProvider>
             <ActivePanelProvider>
-              <ExpandedPanel links={links} onCollapse={handleCollapse} />
+              <ExpandedPanel
+                links={links}
+                topLinks={topLinks}
+                toolLinks={toolLinks}
+                mainLinks={mainLinks}
+                onCollapse={handleCollapse}
+              />
               <nav className="min-h-0 flex-1 overflow-hidden bg-surface-primary-alt">
                 <SidePanelNav links={links} />
               </nav>
@@ -191,6 +197,9 @@ function UnifiedSidebar() {
         >
           <Sidebar
             links={links}
+            topLinks={topLinks}
+            toolLinks={toolLinks}
+            mainLinks={mainLinks}
             expanded={expanded}
             onCollapse={handleCollapse}
             onExpand={handleExpand}

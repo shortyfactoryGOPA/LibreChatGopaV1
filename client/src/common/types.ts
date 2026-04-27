@@ -126,6 +126,7 @@ export type NavLink = {
   title: TranslationKeys;
   label?: string;
   icon: LucideIcon | React.FC;
+  iconClassName?: string;
   Component?: React.ComponentType;
   onClick?: (e?: React.MouseEvent) => void;
   variant?: 'default' | 'ghost';

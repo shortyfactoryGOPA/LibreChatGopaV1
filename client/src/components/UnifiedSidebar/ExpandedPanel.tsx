@@ -97,7 +97,7 @@ const NavIconButton = memo(function NavIconButton({
           )}
           onClick={handleClick}
         >
-          <link.icon className="h-5 w-5" aria-hidden="true" />
+          <link.icon className={cn('h-5 w-5', link.iconClassName)} aria-hidden="true" />
         </Button>
       }
     />
@@ -106,11 +106,17 @@ const NavIconButton = memo(function NavIconButton({
 
 function ExpandedPanel({
   links,
+  topLinks,
+  toolLinks,
+  mainLinks,
   expanded = true,
   onCollapse,
   onExpand,
 }: {
   links: NavLink[];
+  topLinks?: NavLink[];
+  toolLinks?: NavLink[];
+  mainLinks?: NavLink[];
   expanded?: boolean;
   onCollapse?: () => void;
   onExpand?: () => void;
@@ -151,10 +157,37 @@ function ExpandedPanel({
           </Button>
         }
       />
+      {topLinks?.map((link) => (
+        <NavIconButton
+          key={link.id}
+          link={link}
+          isActive={link.id === effectiveActive}
+          expanded={expanded ?? true}
+          setActive={setActive}
+          onExpand={onExpand}
+        />
+      ))}
       <NewChatButton />
       <div className="mx-2 border-b border-border-light" />
+      {toolLinks && toolLinks.length > 0 && (
+        <>
+          <div className="flex flex-col gap-1">
+            {toolLinks.map((link) => (
+              <NavIconButton
+                key={link.id}
+                link={link}
+                isActive={link.id === effectiveActive}
+                expanded={expanded ?? true}
+                setActive={setActive}
+                onExpand={onExpand}
+              />
+            ))}
+          </div>
+          <div className="mx-2 border-b border-border-light" />
+        </>
+      )}
       <div className="flex flex-col gap-1 overflow-y-auto">
-        {links.map((link) => (
+        {(mainLinks ?? links).map((link) => (
           <NavIconButton
             key={link.id}
             link={link}

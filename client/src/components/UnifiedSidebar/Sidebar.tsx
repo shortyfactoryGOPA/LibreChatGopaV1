@@ -6,6 +6,9 @@ import { cn } from '~/utils';
 
 function Sidebar({
   links,
+  topLinks,
+  toolLinks,
+  mainLinks,
   expanded,
   onCollapse,
   onExpand,
@@ -13,6 +16,9 @@ function Sidebar({
   onResizeKeyboard,
 }: {
   links: NavLink[];
+  topLinks?: NavLink[];
+  toolLinks?: NavLink[];
+  mainLinks?: NavLink[];
   expanded: boolean;
   onCollapse: () => void;
   onExpand: () => void;
@@ -24,6 +30,9 @@ function Sidebar({
       <div className="flex h-full w-full overflow-hidden">
         <ExpandedPanel
           links={links}
+          topLinks={topLinks}
+          toolLinks={toolLinks}
+          mainLinks={mainLinks}
           expanded={expanded}
           onCollapse={onCollapse}
           onExpand={onExpand}
