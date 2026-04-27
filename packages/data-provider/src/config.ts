@@ -284,6 +284,7 @@ export const assistantEndpointSchema = baseEndpointSchema.merge(
     disableBuilder: z.boolean().optional(),
     enableNewAssistants: z.boolean().optional(),
     enableOldAssistants: z.boolean().optional(),
+    enableFoundryNew: z.boolean().optional(),
     pollIntervalMs: z.number().optional(),
     timeoutMs: z.number().optional(),
     version: z.union([z.string(), z.number()]).default(2),
@@ -1200,7 +1201,7 @@ export const alternateName: Record<string, string> = {
   [EModelEndpoint.assistants]: 'Assistants',
   [EModelEndpoint.agents]: 'My Agents',
   [EModelEndpoint.azureAssistants]: 'Azure Assistants',
-  [AzureAssistantsNewEndpoint]: 'Azure AI Foundry (Agent)',
+  [AzureAssistantsNewEndpoint]: 'Azure Agents (Legacy)',
   [AzureAssistantsOldEndpoint]: 'Azure Assistants (Legacy)',
   [AzureNewFoundryAssistantsEndpoint]: 'Azure AI Foundry NEW',
   [EModelEndpoint.azureOpenAI]: 'Azure OpenAI',
@@ -2118,7 +2119,7 @@ export function isAzureAssistantsVariantEnabled(
   }
 
   if (endpoint === AzureNewFoundryAssistantsEndpoint) {
-    return config.enableNewAssistants !== false;
+    return config.enableFoundryNew !== false;
   }
 
   return config.enableNewAssistants !== false || config.enableOldAssistants !== false;

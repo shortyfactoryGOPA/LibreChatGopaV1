@@ -378,6 +378,7 @@ export type TConfig = {
   disableBuilder?: boolean;
   enableNewAssistants?: boolean;
   enableOldAssistants?: boolean;
+  enableFoundryNew?: boolean;
   retrievalModels?: string[];
   capabilities?: string[];
   customParams?: {

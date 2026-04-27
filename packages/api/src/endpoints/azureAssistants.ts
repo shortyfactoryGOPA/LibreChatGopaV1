@@ -1,6 +1,7 @@
 export type AzureAssistantsVariantAvailability = {
   enableNewAssistants: boolean;
   enableOldAssistants: boolean;
+  enableFoundryNew: boolean;
 };
 
 const truthyFlagValues = new Set(['1', 'on', 'true', 'yes']);
@@ -36,9 +37,13 @@ export function getAzureAssistantsVariantAvailability(
   const parsedEnableOldAssistants = parseAzureAssistantsVariantFlag(
     env.ENABLE_AZURE_ASSISTANTS_OLD,
   );
+  const parsedEnableFoundryNew = parseAzureAssistantsVariantFlag(
+    env.ENABLE_AZURE_FOUNDRY_NEW,
+  );
 
   return {
     enableNewAssistants: parsedEnableNewAssistants ?? true,
     enableOldAssistants: parsedEnableOldAssistants ?? true,
+    enableFoundryNew: parsedEnableFoundryNew ?? true,
   };
 }

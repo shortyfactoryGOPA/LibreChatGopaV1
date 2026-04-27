@@ -52,8 +52,8 @@ export function createEndpointsConfigService(deps: EndpointsConfigDeps) {
     }
 
     if (isFoundryAgentsConfigured() && !mergedConfig[EModelEndpoint.azureAssistants]) {
-      const { enableNewAssistants, enableOldAssistants } = getAzureAssistantsVariantAvailability();
-      mergedConfig[EModelEndpoint.azureAssistants] = { userProvide: false, enableNewAssistants, enableOldAssistants };
+      const { enableNewAssistants, enableOldAssistants, enableFoundryNew } = getAzureAssistantsVariantAvailability();
+      mergedConfig[EModelEndpoint.azureAssistants] = { userProvide: false, enableNewAssistants, enableOldAssistants, enableFoundryNew };
     }
 
     if (
@@ -86,7 +86,7 @@ export function createEndpointsConfigService(deps: EndpointsConfigDeps) {
       mergedConfig[EModelEndpoint.azureAssistants] &&
       appConfig?.endpoints?.[EModelEndpoint.azureAssistants]
     ) {
-      const { disableBuilder, retrievalModels, capabilities, version, enableNewAssistants, enableOldAssistants } =
+      const { disableBuilder, retrievalModels, capabilities, version, enableNewAssistants, enableOldAssistants, enableFoundryNew } =
         appConfig.endpoints[EModelEndpoint.azureAssistants];
       const envAvailability = getAzureAssistantsVariantAvailability();
       mergedConfig[EModelEndpoint.azureAssistants] = {
@@ -97,6 +97,7 @@ export function createEndpointsConfigService(deps: EndpointsConfigDeps) {
         capabilities,
         enableNewAssistants: enableNewAssistants ?? envAvailability.enableNewAssistants,
         enableOldAssistants: enableOldAssistants ?? envAvailability.enableOldAssistants,
+        enableFoundryNew: enableFoundryNew ?? envAvailability.enableFoundryNew,
       };
     }
 
