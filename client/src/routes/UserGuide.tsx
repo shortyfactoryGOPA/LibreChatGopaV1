@@ -7,7 +7,7 @@ import {
   Languages,
   MessageSquare,
   Paperclip,
-  Sparkles,
+  Target,
 } from 'lucide-react';
 import SidebarReopenButton from '~/components/Nav/SidebarReopenButton';
 import PageHeaderCard from '~/components/PageHeaderCard';
@@ -66,7 +66,7 @@ export default function UserGuide() {
               to="/sdg"
               className="rounded-2xl border border-border-light bg-surface-primary p-4 transition-colors hover:bg-surface-hover"
             >
-              <Sparkles className="mb-3 size-5 text-text-secondary" />
+              <Target className="mb-3 size-5 text-text-secondary" />
               <div className="font-medium text-text-primary">
                 {localize('com_ui_gopa_sdg_title')}
               </div>

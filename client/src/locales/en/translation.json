@@ -1113,7 +1113,7 @@
   "com_ui_gopa_guide_quick_deepl": "Translate full documents with the dedicated DeepL workflow.",
   "com_ui_gopa_guide_quick_new_chat": "Start a clean conversation whenever you switch topic or document.",
   "com_ui_gopa_guide_quick_prompts": "Save recurring instructions and reuse them quickly in the composer.",
-  "com_ui_gopa_guide_quick_sdg": "Open the SDG entry point and follow the migration status of the mapper.",
+  "com_ui_gopa_guide_quick_sdg": "Map your documents or text to Sustainable Development Goals.",
   "com_ui_gopa_guide_reminder_body": "A file shown in the sidebar is not automatically active in every chat. Click it to attach it to the current conversation.",
   "com_ui_gopa_guide_reminder_title": "Key reminder",
   "com_ui_gopa_guide_shortcut_arrow_body": "If the composer is empty, Arrow Up reopens the last editable prompt or message.",
