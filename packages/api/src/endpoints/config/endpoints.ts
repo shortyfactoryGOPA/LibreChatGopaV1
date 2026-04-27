@@ -48,7 +48,8 @@ export function createEndpointsConfigService(deps: EndpointsConfigDeps) {
     }
 
     if (appConfig.endpoints?.[EModelEndpoint.azureOpenAI]?.assistants) {
-      mergedConfig[EModelEndpoint.azureAssistants] = { userProvide: false };
+      const { enableNewAssistants, enableOldAssistants, enableFoundryNew } = getAzureAssistantsVariantAvailability();
+      mergedConfig[EModelEndpoint.azureAssistants] = { userProvide: false, enableNewAssistants, enableOldAssistants, enableFoundryNew };
     }
 
     if (isFoundryAgentsConfigured() && !mergedConfig[EModelEndpoint.azureAssistants]) {
