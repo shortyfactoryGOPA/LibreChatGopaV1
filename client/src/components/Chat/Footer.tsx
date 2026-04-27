@@ -35,6 +35,7 @@ function Footer({ className }: { className?: string }) {
               <a
                 className="text-text-secondary underline"
                 href={href}
+                target="_blank"
                 rel="noreferrer"
                 {...otherProps}
               >
