@@ -1,36 +1,20 @@
 import React, { useEffect, memo } from 'react';
 import TagManager from 'react-gtm-module';
 import ReactMarkdown from 'react-markdown';
-import { Constants } from 'librechat-data-provider';
 import { useGetStartupConfig } from '~/data-provider';
-import { useLocalize } from '~/hooks';
 
 function Footer({ className }: { className?: string }) {
   const { data: config } = useGetStartupConfig();
-  const localize = useLocalize();
 
-  const privacyPolicy = config?.interface?.privacyPolicy;
-  const termsOfService = config?.interface?.termsOfService;
-
-  const privacyPolicyRender = privacyPolicy?.externalUrl != null && (
-    <a className="text-text-secondary underline" href={privacyPolicy.externalUrl} rel="noreferrer">
-      {localize('com_ui_privacy_policy')}
-    </a>
-  );
-
-  const termsOfServiceRender = termsOfService?.externalUrl != null && (
-    <a className="text-text-secondary underline" href={termsOfService.externalUrl} rel="noreferrer">
-      {localize('com_ui_terms_of_service')}
-    </a>
-  );
+  const gopaTrainingUrl =
+    'https://gopagroup.sharepoint.com/sites/Academy/SitePages/GOPA-Group-AI-Chatbot.aspx';
+  const gopaPolicyUrl =
+    'https://gopagroup.sharepoint.com/sites/GOPAGroup-LearningPlatform/SiteAssets/Forms/AllItems.aspx?id=%2Fsites%2FGOPAGroup%2DLearningPlatform%2FSiteAssets%2FSitePages%2FGOPA%2DGroup%2DAI%2DChatbot%2FGOPA%2DGroup%5FPolicy%2Don%2Dthe%2DUse%2Dof%2DGenerative%2DAI%2Epdf&parent=%2Fsites%2FGOPAGroup%2DLearningPlatform%2FSiteAssets%2FSitePages%2FGOPA%2DGroup%2DAI%2DChatbot';
 
   const mainContentParts = (
     typeof config?.customFooter === 'string'
       ? config.customFooter
-      : '[LibreChat ' +
-        Constants.VERSION +
-        '](https://librechat.ai) - ' +
-        localize('com_ui_latest_footer')
+      : `[GOPA AI Training](${gopaTrainingUrl}) | [GOPA Group Policy on the Use of Generative AI](${gopaPolicyUrl})`
   ).split('|');
 
   useEffect(() => {
@@ -67,9 +51,7 @@ function Footer({ className }: { className?: string }) {
     </React.Fragment>
   ));
 
-  const footerElements = [...mainContentRender, privacyPolicyRender, termsOfServiceRender].filter(
-    Boolean,
-  );
+  const footerElements = mainContentRender;
 
   return (
     <div className="relative w-full">
