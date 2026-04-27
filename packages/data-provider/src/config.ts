@@ -1200,7 +1200,7 @@ export const alternateName: Record<string, string> = {
   [EModelEndpoint.assistants]: 'Assistants',
   [EModelEndpoint.agents]: 'My Agents',
   [EModelEndpoint.azureAssistants]: 'Azure Assistants',
-  [AzureAssistantsNewEndpoint]: 'Azure AI Foundry',
+  [AzureAssistantsNewEndpoint]: 'Azure AI Foundry (Agent)',
   [AzureAssistantsOldEndpoint]: 'Azure Assistants (Legacy)',
   [AzureNewFoundryAssistantsEndpoint]: 'Azure AI Foundry NEW',
   [EModelEndpoint.azureOpenAI]: 'Azure OpenAI',
