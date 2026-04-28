@@ -1,0 +1,36 @@
+services:
+  api:
+    env_file:
+      - .env
+    volumes:
+      - type: bind
+        source: ./librechat.yaml
+        target: /app/librechat.yaml
+  mongodb:
+    ports:
+      - "27017:27017"
+  meilisearch:
+    ports:
+      - "7700:7700"
+  searxng-redis:
+    image: redis:7-alpine
+    restart: always
+    volumes:
+      - searxng-redis:/data
+  searxng:
+    image: searxng/searxng:latest
+    restart: always
+    depends_on:
+      - searxng-redis
+    ports:
+      - "8080:8080"
+    environment:
+      - SEARXNG_BASE_URL=http://localhost:8080/
+      - SEARXNG_SECRET=${SEARXNG_SECRET}
+      - SEARXNG_REDIS_URL=redis://searxng-redis:6379/0
+      - SEARXNG_LIMITER=false
+    volumes:
+      - ./searxng/settings.yml:/etc/searxng/settings.yml:ro
+
+volumes:
+  searxng-redis:
