@@ -13,6 +13,11 @@ import {
   Users as UsersIcon,
   Beaker as BeakerIcon,
   Settings as SettingsIcon,
+  Languages,
+  AlignLeft,
+  LifeBuoy,
+  Microscope,
+  CalendarDays,
 } from 'lucide-react';
 import { cn } from '~/utils';
 
@@ -32,6 +37,13 @@ const categoryIconMap: Record<string, React.ElementType> = {
   it: TerminalSquareIcon,
   sales: LineChartIcon,
   aftersales: SettingsIcon,
+  writing_editing: PenLineIcon,
+  translation_localization: Languages,
+  meetings_summaries: CalendarDays,
+  research_analysis: Microscope,
+  brainstorming_ideation: LightbulbIcon,
+  formatting_structuring: AlignLeft,
+  general_support: LifeBuoy,
 };
 
 const categoryColorMap: Record<string, string> = {
@@ -50,6 +62,13 @@ const categoryColorMap: Record<string, string> = {
   it: 'text-red-500',
   sales: 'text-orange-500',
   aftersales: 'text-yellow-500',
+  writing_editing: 'text-purple-400',
+  translation_localization: 'text-blue-400',
+  meetings_summaries: 'text-orange-400',
+  research_analysis: 'text-teal-500',
+  brainstorming_ideation: 'text-yellow-500/90 dark:text-yellow-300',
+  formatting_structuring: 'text-blue-500',
+  general_support: 'text-slate-400',
 };
 
 export default function CategoryIcon({
