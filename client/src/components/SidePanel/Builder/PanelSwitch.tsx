@@ -1,5 +1,12 @@
 import { useState, useEffect, useMemo } from 'react';
-import { defaultAssistantsVersion } from 'librechat-data-provider';
+import {
+  EModelEndpoint,
+  defaultAssistantsVersion,
+  AzureAssistantsNewEndpoint,
+  AzureAssistantsOldEndpoint,
+  AzureNewFoundryAssistantsEndpoint,
+  isAzureAssistantsVariantEnabled,
+} from 'librechat-data-provider';
 import type { Action, TEndpointsConfig } from 'librechat-data-provider';
 import type { ActionsEndpoint } from '~/common';
 import {
@@ -23,10 +30,22 @@ export default function PanelSwitch() {
 
   const { data: endpointsConfig = {} as TEndpointsConfig } = useGetEndpointsQuery();
 
-  const builderEndpoint = useMemo(
-    () => getAssistantEndpoint(conversation?.endpoint, endpointsConfig),
-    [conversation?.endpoint, endpointsConfig],
-  );
+  const builderEndpoint = useMemo(() => {
+    const ep = getAssistantEndpoint(conversation?.endpoint, endpointsConfig);
+    if (ep !== EModelEndpoint.azureAssistants) {
+      return ep;
+    }
+    if (isAzureAssistantsVariantEnabled(endpointsConfig, AzureAssistantsNewEndpoint)) {
+      return AzureAssistantsNewEndpoint;
+    }
+    if (isAzureAssistantsVariantEnabled(endpointsConfig, AzureNewFoundryAssistantsEndpoint)) {
+      return AzureNewFoundryAssistantsEndpoint;
+    }
+    if (isAzureAssistantsVariantEnabled(endpointsConfig, AzureAssistantsOldEndpoint)) {
+      return AzureAssistantsOldEndpoint;
+    }
+    return ep;
+  }, [conversation?.endpoint, endpointsConfig]);
 
   const { data: actions = [] } = useGetActionsQuery(builderEndpoint as ActionsEndpoint);
   const { data: documentsMap = null } = useGetAssistantDocsQuery(builderEndpoint ?? '', {
