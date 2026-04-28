@@ -1,5 +1,7 @@
 services:
   api:
+    build: .
+    image: librechat-gopa:latest
     env_file:
       - .env
     volumes:
