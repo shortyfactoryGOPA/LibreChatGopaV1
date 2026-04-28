@@ -297,7 +297,7 @@ endpoints:
           #   deploymentName: "text-embedding-ada-002"
 
   azureAssistants:
-    disableBuilder: false
+    disableBuilder: true
     pollIntervalMs: 3000
     timeoutMs: 180000
     capabilities: ["code_interpreter", "retrieval", "actions", "tools", "image_vision"]

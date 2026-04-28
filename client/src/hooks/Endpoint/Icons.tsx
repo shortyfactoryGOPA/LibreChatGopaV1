@@ -1,4 +1,4 @@
-import { Feather } from 'lucide-react';
+import { Bot } from 'lucide-react';
 import {
   EModelEndpoint,
   AzureAssistantsNewEndpoint,
@@ -73,7 +73,7 @@ const AgentAvatar = ({ className = '', avatar = '', agentName, size }: AgentIcon
     );
   }
 
-  return <Feather className={cn(agentName === '' ? 'icon-2xl' : '', className)} size={size} />;
+  return <Bot className={cn(agentName === '' ? 'icon-2xl' : '', className)} size={size} />;
 };
 
 const Bedrock = ({ className = '' }: IconMapProps) => {
