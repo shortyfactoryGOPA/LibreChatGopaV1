@@ -156,51 +156,70 @@ export function createAgentCategoryMethods(mongoose: typeof import('mongoose')) 
 
     const defaultCategories = [
       {
-        value: 'general',
-        label: 'com_agents_category_general',
-        description: 'com_agents_category_general_description',
+        value: 'general_support',
+        label: 'com_agents_category_general_support',
+        description: 'com_agents_category_general_support_description',
         order: 0,
       },
       {
-        value: 'hr',
-        label: 'com_agents_category_hr',
-        description: 'com_agents_category_hr_description',
+        value: 'writing_communication',
+        label: 'com_agents_category_writing_communication',
+        description: 'com_agents_category_writing_communication_description',
         order: 1,
       },
       {
-        value: 'rd',
-        label: 'com_agents_category_rd',
-        description: 'com_agents_category_rd_description',
+        value: 'research_analysis',
+        label: 'com_agents_category_research_analysis',
+        description: 'com_agents_category_research_analysis_description',
         order: 2,
       },
       {
-        value: 'finance',
-        label: 'com_agents_category_finance',
-        description: 'com_agents_category_finance_description',
+        value: 'project_management',
+        label: 'com_agents_category_project_management',
+        description: 'com_agents_category_project_management_description',
         order: 3,
       },
       {
-        value: 'it',
-        label: 'com_agents_category_it',
-        description: 'com_agents_category_it_description',
+        value: 'business_development',
+        label: 'com_agents_category_business_development',
+        description: 'com_agents_category_business_development_description',
         order: 4,
       },
       {
-        value: 'sales',
-        label: 'com_agents_category_sales',
-        description: 'com_agents_category_sales_description',
+        value: 'hr_talent',
+        label: 'com_agents_category_hr_talent',
+        description: 'com_agents_category_hr_talent_description',
         order: 5,
       },
       {
-        value: 'aftersales',
-        label: 'com_agents_category_aftersales',
-        description: 'com_agents_category_aftersales_description',
+        value: 'finance_administration',
+        label: 'com_agents_category_finance_administration',
+        description: 'com_agents_category_finance_administration_description',
         order: 6,
+      },
+      {
+        value: 'it_digital',
+        label: 'com_agents_category_it_digital',
+        description: 'com_agents_category_it_digital_description',
+        order: 7,
+      },
+      {
+        value: 'knowledge_management',
+        label: 'com_agents_category_knowledge_management',
+        description: 'com_agents_category_knowledge_management_description',
+        order: 8,
+      },
+      {
+        value: 'translation_localization',
+        label: 'com_agents_category_translation_localization',
+        description: 'com_agents_category_translation_localization_description',
+        order: 9,
       },
     ];
 
     const existingCategories = await getAllCategories();
     const existingCategoryMap = new Map(existingCategories.map((cat) => [cat.value, cat]));
+    const defaultValues = new Set(defaultCategories.map((c) => c.value));
 
     const updates = [];
     let created = 0;
@@ -229,6 +248,19 @@ export function createAgentCategoryMethods(mongoose: typeof import('mongoose')) 
       }
     }
 
+    const deactivateOps = existingCategories
+      .filter((cat) => !cat.custom && !defaultValues.has(cat.value) && cat.isActive)
+      .map((cat) => ({
+        updateOne: {
+          filter: { value: cat.value, custom: { $ne: true } },
+          update: { $set: { isActive: false } },
+        },
+      }));
+
+    if (deactivateOps.length > 0) {
+      await tenantSafeBulkWrite(AgentCategory, deactivateOps, { ordered: false });
+    }
+
     if (updates.length > 0) {
       const bulkOps = updates.map((update) => ({
         updateOne: {
@@ -245,7 +277,7 @@ export function createAgentCategoryMethods(mongoose: typeof import('mongoose')) 
       await tenantSafeBulkWrite(AgentCategory, bulkOps, { ordered: false });
     }
 
-    return updates.length > 0 || created > 0;
+    return updates.length > 0 || created > 0 || deactivateOps.length > 0;
   }
 
   return {

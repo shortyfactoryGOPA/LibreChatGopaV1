@@ -18,6 +18,11 @@ import {
   LifeBuoy,
   Microscope,
   CalendarDays,
+  TrendingUp,
+  Calculator,
+  Monitor,
+  BookOpen,
+  FolderKanban,
 } from 'lucide-react';
 import { cn } from '~/utils';
 
@@ -44,6 +49,13 @@ const categoryIconMap: Record<string, React.ElementType> = {
   brainstorming_ideation: LightbulbIcon,
   formatting_structuring: AlignLeft,
   general_support: LifeBuoy,
+  writing_communication: PenLineIcon,
+  project_management: FolderKanban,
+  business_development: TrendingUp,
+  hr_talent: UsersIcon,
+  finance_administration: Calculator,
+  it_digital: Monitor,
+  knowledge_management: BookOpen,
 };
 
 const categoryColorMap: Record<string, string> = {
@@ -69,6 +81,13 @@ const categoryColorMap: Record<string, string> = {
   brainstorming_ideation: 'text-yellow-500/90 dark:text-yellow-300',
   formatting_structuring: 'text-blue-500',
   general_support: 'text-slate-400',
+  writing_communication: 'text-purple-400',
+  project_management: 'text-blue-500',
+  business_development: 'text-green-500',
+  hr_talent: 'text-emerald-500',
+  finance_administration: 'text-orange-400',
+  it_digital: 'text-red-500',
+  knowledge_management: 'text-indigo-500',
 };
 
 export default function CategoryIcon({
