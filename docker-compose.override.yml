@@ -6,6 +6,7 @@ services:
       - type: bind
         source: ./librechat.yaml
         target: /app/librechat.yaml
+      - ./client/public/images:/app/client/public/images
   mongodb:
     ports:
       - "27017:27017"
