@@ -3,7 +3,7 @@ const { ErrorTypes } = require('librechat-data-provider');
 const { isEnabled, isEmailDomainAllowed, resolveAppConfigForUser } = require('@librechat/api');
 const { createSocialUser, handleExistingUser } = require('./process');
 const { getAppConfig } = require('~/server/services/Config');
-const { findUser } = require('~/models');
+const { findUser, createMemory } = require('~/models');
 
 const socialLogin =
   (provider, getProfileDetails, options = {}) =>
@@ -97,6 +97,18 @@ const socialLogin =
         emailVerified,
         appConfig,
       });
+
+      if (name && newUser?._id) {
+        createMemory({
+          userId: newUser._id,
+          key: 'Prénom et nom',
+          value: name,
+          tokenCount: Math.ceil(name.length / 4),
+        }).catch((err) =>
+          logger.warn(`[${provider}Login] Failed to create name memory for new user: ${err.message}`),
+        );
+      }
+
       return cb(null, newUser);
     } catch (err) {
       logger.error(`[${provider}Login]`, err);
