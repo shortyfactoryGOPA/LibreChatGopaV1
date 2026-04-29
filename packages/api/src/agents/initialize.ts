@@ -1,5 +1,6 @@
 import { Providers } from '@librechat/agents';
 import {
+  Tools,
   Constants,
   ErrorTypes,
   EModelEndpoint,
@@ -12,6 +13,7 @@ import {
 import type {
   AgentToolResources,
   AgentToolOptions,
+  TEphemeralAgent,
   TEndpointOption,
   TFile,
   Agent,
@@ -197,6 +199,38 @@ export async function initializeAgent(
       isInitialAgent === true ? endpointOption?.model_parameters : {},
     ),
   );
+
+  /** For Azure agents: convert LibreChat tool strings to native Responses API tools.
+   *  Native tools only activate when the user explicitly enables them (toggle === true).
+   *  LibreChat's own tool implementations are always replaced (never fall back to them). */
+  if (
+    agent.tools?.length &&
+    (agent.provider === EModelEndpoint.azureOpenAI ||
+      (_modelOptions as Record<string, unknown>).useResponsesApi === true)
+  ) {
+    const ephemeralAgent = (req.body as Record<string, unknown>)
+      ?.ephemeralAgent as TEphemeralAgent | undefined;
+    const mOpts = _modelOptions as Record<string, unknown>;
+    const replacedTools = new Set<string>();
+    if (agent.tools.includes(Tools.execute_code)) {
+      if (ephemeralAgent?.execute_code === true) {
+        mOpts.code_interpreter = true;
+      }
+      replacedTools.add(Tools.execute_code);
+    }
+    if (agent.tools.includes(Tools.web_search)) {
+      if (ephemeralAgent?.web_search === true) {
+        mOpts.web_search = true;
+      }
+      replacedTools.add(Tools.web_search);
+    }
+    if (replacedTools.size > 0) {
+      agent.tools = agent.tools.filter((t) => !replacedTools.has(t));
+      if (mOpts.code_interpreter === true || mOpts.web_search === true) {
+        mOpts.useResponsesApi = true;
+      }
+    }
+  }
 
   const { resendFiles, maxContextTokens, modelOptions } = extractLibreChatParams(
     _modelOptions as Record<string, unknown>,

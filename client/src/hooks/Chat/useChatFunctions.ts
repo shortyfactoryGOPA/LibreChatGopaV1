@@ -126,8 +126,13 @@ export default function useChatFunctions({
     const ephemeralAgent = getEphemeralAgent(conversationId ?? Constants.NEW_CONVO);
     const isEditOrContinue = isEdited || isContinued;
 
-    if (!isAgentsEndpoint(endpoint) && ephemeralAgent?.web_search === false && conversation) {
-      conversation.web_search = false;
+    if (!isAgentsEndpoint(endpoint) && conversation) {
+      if (ephemeralAgent?.web_search === false) {
+        conversation.web_search = false;
+      }
+      if (ephemeralAgent?.execute_code === false) {
+        conversation.code_interpreter = false;
+      }
     }
 
     let currentMessages: TMessage[] | null = overrideMessages ?? getMessages() ?? [];

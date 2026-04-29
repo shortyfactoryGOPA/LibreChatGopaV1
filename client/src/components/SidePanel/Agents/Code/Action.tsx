@@ -1,5 +1,4 @@
 import { useRef } from 'react';
-import { KeyRoundIcon } from 'lucide-react';
 import { AuthType, AgentCapabilities } from 'librechat-data-provider';
 import { useFormContext, Controller, useWatch } from 'react-hook-form';
 import {
@@ -42,13 +41,7 @@ export default function Action({ authType = '', isToolAuthenticated = false }) {
   const isUserProvided = authType === AuthType.USER_PROVIDED;
 
   const handleCheckboxChange = (checked: boolean) => {
-    if (isToolAuthenticated) {
-      setValue(AgentCapabilities.execute_code, checked, { shouldDirty: true });
-    } else if (runCodeIsEnabled) {
-      setValue(AgentCapabilities.execute_code, false, { shouldDirty: true });
-    } else {
-      setIsDialogOpen(true);
-    }
+    setValue(AgentCapabilities.execute_code, checked, { shouldDirty: true });
   };
 
   return (
@@ -62,11 +55,11 @@ export default function Action({ authType = '', isToolAuthenticated = false }) {
               <Checkbox
                 {...field}
                 id="execute-code-checkbox"
-                checked={runCodeIsEnabled ? runCodeIsEnabled : isToolAuthenticated && field.value}
+                checked={runCodeIsEnabled ? runCodeIsEnabled : field.value}
                 onCheckedChange={handleCheckboxChange}
                 className="relative float-left mr-2 inline-flex h-4 w-4 cursor-pointer"
                 value={field.value.toString()}
-                disabled={runCodeIsEnabled ? false : !isToolAuthenticated}
+                disabled={false}
                 aria-labelledby="execute-code-label"
               />
             )}
@@ -74,26 +67,11 @@ export default function Action({ authType = '', isToolAuthenticated = false }) {
           <label
             id="execute-code-label"
             htmlFor="execute-code-checkbox"
-            className={cn(
-              'form-check-label text-token-text-primary text-sm',
-              (runCodeIsEnabled || isToolAuthenticated) && 'cursor-pointer',
-            )}
+            className="form-check-label text-token-text-primary cursor-pointer text-sm"
           >
             {localize('com_ui_run_code')}
           </label>
           <div className="ml-2 flex gap-2">
-            {isUserProvided && (
-              <button
-                ref={apiKeyButtonRef}
-                type="button"
-                onClick={() => setIsDialogOpen(true)}
-                aria-label={localize('com_ui_add_code_interpreter_api_key')}
-                aria-haspopup="dialog"
-                aria-expanded={isDialogOpen}
-              >
-                <KeyRoundIcon className="h-5 w-5 text-text-primary" aria-hidden="true" />
-              </button>
-            )}
             <HoverCardTrigger asChild>
               <button
                 type="button"

@@ -1,4 +1,3 @@
-import { KeyRoundIcon } from 'lucide-react';
 import { useRef } from 'react';
 import { AuthType, AgentCapabilities } from 'librechat-data-provider';
 import { useFormContext, Controller, useWatch } from 'react-hook-form';
@@ -48,13 +47,7 @@ export default function Action({
   const isUserProvided = authTypes?.some(([, authType]) => authType === AuthType.USER_PROVIDED);
 
   const handleCheckboxChange = (checked: boolean) => {
-    if (isToolAuthenticated) {
-      setValue(AgentCapabilities.web_search, checked, { shouldDirty: true });
-    } else if (webSearchIsEnabled) {
-      setValue(AgentCapabilities.web_search, false, { shouldDirty: true });
-    } else {
-      setIsDialogOpen(true);
-    }
+    setValue(AgentCapabilities.web_search, checked, { shouldDirty: true });
   };
 
   return (
@@ -68,13 +61,11 @@ export default function Action({
               <Checkbox
                 {...field}
                 id="web-search-checkbox"
-                checked={
-                  webSearchIsEnabled ? webSearchIsEnabled : isToolAuthenticated && field.value
-                }
+                checked={webSearchIsEnabled ? webSearchIsEnabled : field.value}
                 onCheckedChange={handleCheckboxChange}
                 className="relative float-left mr-2 inline-flex h-4 w-4 cursor-pointer"
                 value={field.value.toString()}
-                disabled={webSearchIsEnabled ? false : !isToolAuthenticated}
+                disabled={false}
                 aria-labelledby="web-search-label"
               />
             )}
@@ -82,25 +73,11 @@ export default function Action({
           <label
             id="web-search-label"
             htmlFor="web-search-checkbox"
-            className={cn(
-              'form-check-label text-token-text-primary text-sm',
-              (webSearchIsEnabled || isToolAuthenticated) && 'cursor-pointer',
-            )}
+            className="form-check-label text-token-text-primary cursor-pointer text-sm"
           >
             {localize('com_ui_web_search')}
           </label>
           <div className="ml-2 flex gap-2">
-            {isUserProvided && (
-              <button
-                ref={apiKeyButtonRef}
-                type="button"
-                onClick={() => setIsDialogOpen(true)}
-                aria-label={localize('com_ui_add_web_search_api_keys')}
-                aria-haspopup="dialog"
-              >
-                <KeyRoundIcon className="h-5 w-5 text-text-primary" />
-              </button>
-            )}
             <HoverCardTrigger asChild>
               <button
                 type="button"

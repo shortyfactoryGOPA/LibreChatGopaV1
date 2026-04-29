@@ -25,6 +25,7 @@ import { mainTextareaId, BadgeItem } from '~/common';
 import AttachFileChat from './Files/AttachFileChat';
 import FileFormChat from './Files/FileFormChat';
 import { cn, removeFocusRings } from '~/utils';
+import AgentToolStatusBadges from './AgentToolStatusBadges';
 import TextareaHeader from './TextareaHeader';
 import PromptsCommand from './PromptsCommand';
 import AudioRecorder from './AudioRecorder';
@@ -362,6 +363,12 @@ const ChatForm = memo(function ChatForm({
                   Array.isArray(conversation?.messages) && conversation.messages.length >= 1
                 }
               />
+              {isAgentsEndpoint(endpoint) && conversation?.agent_id && (
+                <AgentToolStatusBadges
+                  conversationId={conversationId}
+                  agentId={conversation.agent_id}
+                />
+              )}
               <div className="mx-auto flex" />
               {SpeechToText && (
                 <AudioRecorder
