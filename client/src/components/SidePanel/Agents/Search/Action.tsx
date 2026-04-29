@@ -48,13 +48,7 @@ export default function Action({
   const isUserProvided = authTypes?.some(([, authType]) => authType === AuthType.USER_PROVIDED);
 
   const handleCheckboxChange = (checked: boolean) => {
-    if (!isUserProvided || isToolAuthenticated) {
-      setValue(AgentCapabilities.web_search, checked, { shouldDirty: true });
-    } else if (!checked || webSearchIsEnabled) {
-      setValue(AgentCapabilities.web_search, false, { shouldDirty: true });
-    } else {
-      setIsDialogOpen(true);
-    }
+    setValue(AgentCapabilities.web_search, checked, { shouldDirty: true });
   };
 
   return (
