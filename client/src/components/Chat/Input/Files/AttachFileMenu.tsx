@@ -2,7 +2,6 @@ import React, { useRef, useState, useMemo, useCallback } from 'react';
 import { useRecoilState } from 'recoil';
 import * as Ariakit from '@ariakit/react';
 import {
-  FileSearch,
   ImageUpIcon,
   FileType2Icon,
   FileImageIcon,
@@ -106,7 +105,7 @@ const AttachFileMenu = ({
    * */
   const capabilities = useAgentCapabilities(agentsConfig?.capabilities ?? defaultAgentCapabilities);
 
-  const { fileSearchAllowedByAgent, codeAllowedByAgent, provider } = useAgentToolPermissions(
+  const { codeAllowedByAgent, provider } = useAgentToolPermissions(
     agentId,
     ephemeralAgent,
   );
@@ -199,21 +198,6 @@ const AttachFileMenu = ({
         });
       }
 
-      if (capabilities.fileSearchEnabled && fileSearchAllowedByAgent) {
-        items.push({
-          label: localize('com_ui_upload_file_search'),
-          onClick: () => {
-            setToolResource(EToolResources.file_search);
-            setEphemeralAgent((prev) => ({
-              ...prev,
-              [EToolResources.file_search]: true,
-            }));
-            onAction();
-          },
-          icon: <FileSearch className="icon-md" />,
-        });
-      }
-
       if (capabilities.codeEnabled && codeAllowedByAgent) {
         items.push({
           label: localize('com_ui_upload_code_files'),
@@ -261,7 +245,6 @@ const AttachFileMenu = ({
     setEphemeralAgent,
     sharePointEnabled,
     codeAllowedByAgent,
-    fileSearchAllowedByAgent,
     setIsSharePointDialogOpen,
   ]);
 
