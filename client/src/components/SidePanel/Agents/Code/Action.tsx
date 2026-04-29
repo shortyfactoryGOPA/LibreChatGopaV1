@@ -1,5 +1,4 @@
 import { useRef } from 'react';
-import { KeyRoundIcon } from 'lucide-react';
 import { AuthType, AgentCapabilities } from 'librechat-data-provider';
 import { useFormContext, Controller, useWatch } from 'react-hook-form';
 import {
@@ -73,18 +72,6 @@ export default function Action({ authType = '', isToolAuthenticated = false }) {
             {localize('com_ui_run_code')}
           </label>
           <div className="ml-2 flex gap-2">
-            {isUserProvided && (
-              <button
-                ref={apiKeyButtonRef}
-                type="button"
-                onClick={() => setIsDialogOpen(true)}
-                aria-label={localize('com_ui_add_code_interpreter_api_key')}
-                aria-haspopup="dialog"
-                aria-expanded={isDialogOpen}
-              >
-                <KeyRoundIcon className="h-5 w-5 text-text-primary" aria-hidden="true" />
-              </button>
-            )}
             <HoverCardTrigger asChild>
               <button
                 type="button"
