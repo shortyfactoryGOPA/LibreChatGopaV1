@@ -67,6 +67,8 @@ async function buildEndpointOption(req, res, next) {
       return handleError(res, { text: 'Model spec mismatch' });
     }
 
+    const clientWebSearch = typeof req.body.web_search === 'boolean' ? req.body.web_search : undefined;
+
     try {
       currentModelSpec.preset.spec = spec;
       parsedBody = parseCompactConvo({
@@ -77,6 +79,9 @@ async function buildEndpointOption(req, res, next) {
       });
       if (currentModelSpec.iconURL != null && currentModelSpec.iconURL !== '') {
         parsedBody.iconURL = currentModelSpec.iconURL;
+      }
+      if (clientWebSearch === false) {
+        parsedBody.web_search = false;
       }
     } catch (error) {
       logger.error(`Error parsing model spec for endpoint ${endpoint}`, error);

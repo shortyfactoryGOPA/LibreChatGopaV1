@@ -1,17 +1,15 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import * as Ariakit from '@ariakit/react';
 import { Globe, Settings, Settings2, TerminalSquareIcon } from 'lucide-react';
-import { TooltipAnchor, DropdownPopup, PinIcon, VectorIcon } from '@librechat/client';
+import { TooltipAnchor, DropdownPopup, PinIcon } from '@librechat/client';
 import type { MenuItemProps } from '~/common';
 import {
   AuthType,
   Permissions,
-  ArtifactModes,
   PermissionTypes,
   defaultAgentCapabilities,
 } from 'librechat-data-provider';
 import { useLocalize, useHasAccess, useAgentCapabilities } from '~/hooks';
-import ArtifactsSubMenu from '~/components/Chat/Input/ArtifactsSubMenu';
 import MCPSubMenu from '~/components/Chat/Input/MCPSubMenu';
 import { useGetStartupConfig } from '~/data-provider';
 import { useBadgeRowContext } from '~/Providers';
@@ -26,7 +24,7 @@ const ToolsDropdown = ({ disabled }: ToolsDropdownProps) => {
   const context = useBadgeRowContext();
   const { data: startupConfig } = useGetStartupConfig();
 
-  const { codeEnabled, webSearchEnabled, artifactsEnabled, fileSearchEnabled } =
+  const { codeEnabled, webSearchEnabled } =
     useAgentCapabilities(context?.agentsConfig?.capabilities ?? defaultAgentCapabilities);
 
   const canUseWebSearch = useHasAccess({
@@ -39,11 +37,6 @@ const ToolsDropdown = ({ disabled }: ToolsDropdownProps) => {
     permission: Permissions.USE,
   });
 
-  const canUseFileSearch = useHasAccess({
-    permissionType: PermissionTypes.FILE_SEARCH,
-    permission: Permissions.USE,
-  });
-
   const canUseMcp = useHasAccess({
     permissionType: PermissionTypes.MCP_SERVERS,
     permission: Permissions.USE,
@@ -53,36 +46,20 @@ const ToolsDropdown = ({ disabled }: ToolsDropdownProps) => {
   const isDisabled = disabled ?? false;
   const {
     webSearch,
-    artifacts,
-    fileSearch,
     mcpServerManager,
     codeApiKeyForm,
     codeInterpreter,
-    searchApiKeyForm,
   } = context ?? {};
 
   const { setIsDialogOpen: setIsCodeDialogOpen, menuTriggerRef: codeMenuTriggerRef } =
     codeApiKeyForm ?? {};
-  const { setIsDialogOpen: setIsSearchDialogOpen, menuTriggerRef: searchMenuTriggerRef } =
-    searchApiKeyForm ?? {};
-  const {
-    isPinned: isSearchPinned,
-    setIsPinned: setIsSearchPinned,
-    authData: webSearchAuthData,
-  } = webSearch ?? {};
+  const { isPinned: isSearchPinned, setIsPinned: setIsSearchPinned } = webSearch ?? {};
   const {
     isPinned: isCodePinned,
     setIsPinned: setIsCodePinned,
     authData: codeAuthData,
   } = codeInterpreter ?? {};
-  const { isPinned: isFileSearchPinned, setIsPinned: setIsFileSearchPinned } = fileSearch ?? {};
-  const { isPinned: isArtifactsPinned, setIsPinned: setIsArtifactsPinned } = artifacts ?? {};
-
-  const showWebSearchSettings = useMemo(() => {
-    const authTypes = webSearchAuthData?.authTypes ?? [];
-    if (authTypes.length === 0) return true;
-    return !authTypes.every(([, authType]) => authType === AuthType.SYSTEM_DEFINED);
-  }, [webSearchAuthData?.authTypes]);
+  const showWebSearchSettings = false;
 
   const showCodeSettings = useMemo(
     () => codeAuthData?.message !== AuthType.SYSTEM_DEFINED,
@@ -99,73 +76,9 @@ const ToolsDropdown = ({ disabled }: ToolsDropdownProps) => {
     codeInterpreter?.debouncedChange({ value: newValue });
   }, [codeInterpreter]);
 
-  const handleFileSearchToggle = useCallback(() => {
-    const newValue = !fileSearch?.toggleState;
-    fileSearch?.debouncedChange({ value: newValue });
-  }, [fileSearch]);
-
-  const handleArtifactsToggle = useCallback(() => {
-    const currentState = artifacts?.toggleState;
-    if (!currentState || currentState === '') {
-      artifacts?.debouncedChange({ value: ArtifactModes.DEFAULT });
-    } else {
-      artifacts?.debouncedChange({ value: '' });
-    }
-  }, [artifacts]);
-
-  const handleShadcnToggle = useCallback(() => {
-    const currentState = artifacts?.toggleState;
-    if (currentState === ArtifactModes.SHADCNUI) {
-      artifacts?.debouncedChange({ value: ArtifactModes.DEFAULT });
-    } else {
-      artifacts?.debouncedChange({ value: ArtifactModes.SHADCNUI });
-    }
-  }, [artifacts]);
-
-  const handleCustomToggle = useCallback(() => {
-    const currentState = artifacts?.toggleState;
-    if (currentState === ArtifactModes.CUSTOM) {
-      artifacts?.debouncedChange({ value: ArtifactModes.DEFAULT });
-    } else {
-      artifacts?.debouncedChange({ value: ArtifactModes.CUSTOM });
-    }
-  }, [artifacts]);
-
   const mcpPlaceholder = startupConfig?.interface?.mcpServers?.placeholder;
 
   const dropdownItems: MenuItemProps[] = [];
-
-  if (fileSearchEnabled && canUseFileSearch) {
-    dropdownItems.push({
-      onClick: handleFileSearchToggle,
-      hideOnClick: false,
-      render: (props) => (
-        <div {...props}>
-          <div className="flex items-center gap-2">
-            <VectorIcon className="icon-md" />
-            <span>{localize('com_assistants_file_search')}</span>
-          </div>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsFileSearchPinned?.(!isFileSearchPinned);
-            }}
-            className={cn(
-              'rounded p-1 transition-all duration-200',
-              'hover:bg-surface-secondary hover:shadow-sm',
-              !isFileSearchPinned && 'text-text-secondary hover:text-text-primary',
-            )}
-            aria-label={isFileSearchPinned ? 'Unpin' : 'Pin'}
-          >
-            <div className="h-4 w-4">
-              <PinIcon unpin={isFileSearchPinned} />
-            </div>
-          </button>
-        </div>
-      ),
-    });
-  }
 
   if (canUseWebSearch && webSearchEnabled) {
     dropdownItems.push({
@@ -271,23 +184,6 @@ const ToolsDropdown = ({ disabled }: ToolsDropdownProps) => {
             </button>
           </div>
         </div>
-      ),
-    });
-  }
-
-  if (artifactsEnabled && setIsArtifactsPinned != null) {
-    dropdownItems.push({
-      hideOnClick: false,
-      render: (props) => (
-        <ArtifactsSubMenu
-          {...props}
-          isArtifactsPinned={isArtifactsPinned ?? false}
-          setIsArtifactsPinned={setIsArtifactsPinned}
-          artifactsMode={artifacts?.toggleState as string}
-          handleArtifactsToggle={handleArtifactsToggle}
-          handleShadcnToggle={handleShadcnToggle}
-          handleCustomToggle={handleCustomToggle}
-        />
       ),
     });
   }

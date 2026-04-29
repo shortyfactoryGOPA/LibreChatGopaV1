@@ -372,7 +372,6 @@ function BadgeRow({
           <>
             <WebSearch />
             <CodeInterpreter />
-            <FileSearch />
             <Artifacts />
             <MCPSelect />
           </>
