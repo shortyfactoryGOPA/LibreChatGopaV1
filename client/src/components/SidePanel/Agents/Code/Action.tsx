@@ -42,9 +42,9 @@ export default function Action({ authType = '', isToolAuthenticated = false }) {
   const isUserProvided = authType === AuthType.USER_PROVIDED;
 
   const handleCheckboxChange = (checked: boolean) => {
-    if (isToolAuthenticated) {
+    if (!isUserProvided || isToolAuthenticated) {
       setValue(AgentCapabilities.execute_code, checked, { shouldDirty: true });
-    } else if (runCodeIsEnabled) {
+    } else if (!checked || runCodeIsEnabled) {
       setValue(AgentCapabilities.execute_code, false, { shouldDirty: true });
     } else {
       setIsDialogOpen(true);
@@ -62,11 +62,11 @@ export default function Action({ authType = '', isToolAuthenticated = false }) {
               <Checkbox
                 {...field}
                 id="execute-code-checkbox"
-                checked={runCodeIsEnabled ? runCodeIsEnabled : isToolAuthenticated && field.value}
+                checked={runCodeIsEnabled ? runCodeIsEnabled : field.value}
                 onCheckedChange={handleCheckboxChange}
                 className="relative float-left mr-2 inline-flex h-4 w-4 cursor-pointer"
                 value={field.value.toString()}
-                disabled={runCodeIsEnabled ? false : !isToolAuthenticated}
+                disabled={false}
                 aria-labelledby="execute-code-label"
               />
             )}
@@ -74,10 +74,7 @@ export default function Action({ authType = '', isToolAuthenticated = false }) {
           <label
             id="execute-code-label"
             htmlFor="execute-code-checkbox"
-            className={cn(
-              'form-check-label text-token-text-primary text-sm',
-              (runCodeIsEnabled || isToolAuthenticated) && 'cursor-pointer',
-            )}
+            className="form-check-label text-token-text-primary cursor-pointer text-sm"
           >
             {localize('com_ui_run_code')}
           </label>
