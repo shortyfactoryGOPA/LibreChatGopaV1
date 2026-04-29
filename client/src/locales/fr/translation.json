@@ -571,7 +571,7 @@
   "com_sidepanel_conversation_tags": "Signets",
   "com_sidepanel_hide_panel": "Masquer le panneau",
   "com_sidepanel_manage_files": "Gérer les fichiers",
-  "com_sidepanel_parameters": "Paramètres",
+  "com_sidepanel_parameters": "Presets",
   "com_sources_agent_file": "Document source",
   "com_sources_agent_files": "Fichiers de l'Agent",
   "com_sources_download_aria_label": "Télécharger {{filename}}{{status}}",
