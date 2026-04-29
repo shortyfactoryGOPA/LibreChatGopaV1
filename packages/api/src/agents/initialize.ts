@@ -201,7 +201,7 @@ export async function initializeAgent(
   );
 
   /** For Azure agents: convert LibreChat tool strings to native Responses API tools.
-   *  Reads ephemeralAgent toggle state so the user can disable tools per-conversation.
+   *  Native tools only activate when the user explicitly enables them (toggle === true).
    *  LibreChat's own tool implementations are always replaced (never fall back to them). */
   if (
     agent.tools?.length &&
@@ -213,13 +213,13 @@ export async function initializeAgent(
     const mOpts = _modelOptions as Record<string, unknown>;
     const replacedTools = new Set<string>();
     if (agent.tools.includes(Tools.execute_code)) {
-      if (ephemeralAgent?.execute_code !== false) {
+      if (ephemeralAgent?.execute_code === true) {
         mOpts.code_interpreter = true;
       }
       replacedTools.add(Tools.execute_code);
     }
     if (agent.tools.includes(Tools.web_search)) {
-      if (ephemeralAgent?.web_search !== false) {
+      if (ephemeralAgent?.web_search === true) {
         mOpts.web_search = true;
       }
       replacedTools.add(Tools.web_search);
