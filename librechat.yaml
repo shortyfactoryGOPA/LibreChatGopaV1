@@ -418,6 +418,7 @@ modelSpecs:
       group: "Azure OpenAI"
       groupIcon: "azureOpenAI"
       webSearch: true
+      executeCode: true
       preset:
         endpoint: "azureOpenAI"
         model: "gpt-5.2"
@@ -431,6 +432,7 @@ modelSpecs:
       description: "Web Search + Native Code Interpreter"
       group: "Azure OpenAI"
       webSearch: true
+      executeCode: true
       preset:
         endpoint: "azureOpenAI"
         model: "gpt-5.4"

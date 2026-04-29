@@ -68,6 +68,7 @@ async function buildEndpointOption(req, res, next) {
     }
 
     const clientWebSearch = typeof req.body.web_search === 'boolean' ? req.body.web_search : undefined;
+    const clientCodeInterpreter = typeof req.body.code_interpreter === 'boolean' ? req.body.code_interpreter : undefined;
 
     try {
       currentModelSpec.preset.spec = spec;
@@ -82,6 +83,9 @@ async function buildEndpointOption(req, res, next) {
       }
       if (clientWebSearch === false) {
         parsedBody.web_search = false;
+      }
+      if (clientCodeInterpreter === false) {
+        parsedBody.code_interpreter = false;
       }
     } catch (error) {
       logger.error(`Error parsing model spec for endpoint ${endpoint}`, error);

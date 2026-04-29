@@ -195,13 +195,9 @@ export default function BadgeRowProvider({
   const codeInterpreter = useToolToggle({
     conversationId,
     storageContextKey,
-    setIsDialogOpen: setCodeDialogOpen,
     toolKey: Tools.execute_code,
     localStorageKey: LocalStorageKeys.LAST_CODE_TOGGLE_,
-    authConfig: {
-      toolId: Tools.execute_code,
-      queryOptions: { retry: 1 },
-    },
+    isAuthenticated: true,
   });
 
   /** WebSearch hooks */

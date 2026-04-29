@@ -8,7 +8,6 @@ function CodeInterpreter() {
   const localize = useLocalize();
   const context = useBadgeRowContext();
   const { toggleState: runCode, debouncedChange, isPinned } = context?.codeInterpreter ?? {};
-  const { badgeTriggerRef } = context?.codeApiKeyForm ?? {};
 
   if (!context) {
     return null;
@@ -17,7 +16,6 @@ function CodeInterpreter() {
   return (
     (runCode || isPinned) && (
       <CheckboxButton
-        ref={badgeTriggerRef}
         className="max-w-fit"
         checked={runCode}
         setValue={debouncedChange}

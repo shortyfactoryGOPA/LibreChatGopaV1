@@ -73,7 +73,7 @@ export async function loadEphemeralAgent(
     }
   }
   const tools: string[] = [];
-  if (ephemeralAgent?.execute_code === true || modelSpec?.executeCode === true) {
+  if (ephemeralAgent?.execute_code !== false && (ephemeralAgent?.execute_code === true || modelSpec?.executeCode === true)) {
     tools.push(Tools.execute_code);
   }
   if (ephemeralAgent?.file_search === true || modelSpec?.fileSearch === true) {
