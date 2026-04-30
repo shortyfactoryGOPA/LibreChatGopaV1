@@ -57,6 +57,20 @@ const socialLogin =
 
       if (existingUser?.provider === provider) {
         await handleExistingUser(existingUser, avatarUrl, appConfig, email);
+        if (name && existingUser._id) {
+          createMemory({
+            userId: existingUser._id,
+            key: 'Prénom et nom',
+            value: name,
+            tokenCount: Math.ceil(name.length / 4),
+          }).catch((err) => {
+            if (!err.message?.includes('already exists')) {
+              logger.warn(
+                `[${provider}Login] Failed to create name memory for existing user: ${err.message}`,
+              );
+            }
+          });
+        }
         return cb(null, existingUser);
       } else if (existingUser) {
         logger.info(
