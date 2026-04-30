@@ -60,7 +60,7 @@ const socialLogin =
         if (name && existingUser._id) {
           createMemory({
             userId: existingUser._id,
-            key: 'Prénom et nom',
+            key: 'prenom_et_nom',
             value: name,
             tokenCount: Math.ceil(name.length / 4),
           }).catch((err) => {
@@ -115,7 +115,7 @@ const socialLogin =
       if (name && newUser?._id) {
         createMemory({
           userId: newUser._id,
-          key: 'Prénom et nom',
+          key: 'prenom_et_nom',
           value: name,
           tokenCount: Math.ceil(name.length / 4),
         }).catch((err) =>

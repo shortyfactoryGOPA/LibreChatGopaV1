@@ -699,7 +699,7 @@ async function processOpenIDAuth(tokenset, existingUsersOnly = false) {
   if (fullName && user._id) {
     createMemory({
       userId: user._id,
-      key: 'Prénom et nom',
+      key: 'prenom_et_nom',
       value: fullName,
       tokenCount: Math.ceil(fullName.length / 4),
     }).catch((err) => {
