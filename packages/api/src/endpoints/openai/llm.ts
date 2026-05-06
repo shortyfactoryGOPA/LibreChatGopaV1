@@ -151,6 +151,7 @@ export function getOpenAILLMConfig({
     verbosity,
     web_search,
     code_interpreter,
+    azure_container_id,
     frequency_penalty,
     presence_penalty,
     ...modelOptions
@@ -299,7 +300,10 @@ export function getOpenAILLMConfig({
   if (enableCodeInterpreter) {
     /** Native Azure/OpenAI code interpreter via Responses API */
     llmConfig.useResponsesApi = true;
-    tools.push({ type: 'code_interpreter', container: { type: 'auto' } });
+    const container = azure_container_id
+      ? { type: 'server' as const, container_id: azure_container_id as string }
+      : { type: 'auto' as const };
+    tools.push({ type: 'code_interpreter', container });
   }
 
   /**

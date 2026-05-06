@@ -65,6 +65,76 @@ function resolveAzureCredentials() {
 }
 
 /**
+ * Creates a new Azure OpenAI container for code interpreter files.
+ * @returns {Promise<string|null>} The container ID, or null on failure.
+ */
+async function createAzureContainer() {
+  const credentials = resolveAzureCredentials();
+  if (!credentials) {
+    logger.warn('[createAzureContainer] Missing Azure credentials');
+    return null;
+  }
+  const { apiKey, baseURL } = credentials;
+  try {
+    const url = `${baseURL}/containers?api-version=preview`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'api-key': apiKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    });
+    if (!response.ok) {
+      logger.warn(`[createAzureContainer] Azure returned ${response.status}`);
+      return null;
+    }
+    const json = await response.json();
+    return json?.id ?? null;
+  } catch (error) {
+    logger.error('[createAzureContainer] Error creating container:', error);
+    return null;
+  }
+}
+
+/**
+ * Uploads a file stream to an Azure OpenAI container.
+ * @param {string} container_id
+ * @param {import('fs').ReadStream} stream
+ * @param {string} filename
+ * @returns {Promise<string|null>} The file ID, or null on failure.
+ */
+async function uploadFileToAzureContainer(container_id, stream, filename) {
+  const credentials = resolveAzureCredentials();
+  if (!credentials) {
+    logger.warn('[uploadFileToAzureContainer] Missing Azure credentials');
+    return null;
+  }
+  const { apiKey, baseURL } = credentials;
+  try {
+    const chunks = [];
+    for await (const chunk of stream) {
+      chunks.push(chunk);
+    }
+    const buffer = Buffer.concat(chunks);
+    const formData = new FormData();
+    formData.append('file', new File([buffer], filename));
+    const url = `${baseURL}/containers/${container_id}/files?api-version=preview`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'api-key': apiKey },
+      body: formData,
+    });
+    if (!response.ok) {
+      logger.warn(`[uploadFileToAzureContainer] Azure returned ${response.status}`);
+      return null;
+    }
+    const json = await response.json();
+    return json?.id ?? null;
+  } catch (error) {
+    logger.error('[uploadFileToAzureContainer] Error uploading file:', error);
+    return null;
+  }
+}
+
+/**
  * Lists files in an Azure Responses API container.
  * @param {string} container_id
  * @returns {Promise<Array<{id: string, path?: string, filename?: string}>>}
@@ -1035,4 +1105,7 @@ module.exports = {
   markSummarizationUsage,
   buildSummarizationHandlers,
   createResponsesToolEndCallback,
+  createAzureContainer,
+  uploadFileToAzureContainer,
+  resolveAzureCredentials,
 };

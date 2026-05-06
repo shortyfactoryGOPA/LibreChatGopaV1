@@ -364,9 +364,20 @@ export async function initializeAgent(
     agent.provider = overrideProvider;
   }
 
+  /** Extract container_id from user-uploaded execute_code files (Azure native) */
+  const azureContainerId = requestFiles
+    .concat(currentFiles ?? [])
+    .find(
+      (f) =>
+        (f as IMongoFile & { metadata?: { container_id?: string } }).metadata?.container_id,
+    ) as (IMongoFile & { metadata?: { container_id?: string } }) | undefined;
+
   const finalModelOptions = {
     ...modelOptions,
     model: agent.model,
+    ...(azureContainerId?.metadata?.container_id
+      ? { azure_container_id: azureContainerId.metadata.container_id }
+      : {}),
   };
 
   const options: InitializeResultBase = await getOptions({

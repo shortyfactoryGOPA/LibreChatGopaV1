@@ -5,7 +5,9 @@ import type { OpenAIClientOptions, Providers } from '@librechat/agents';
 import type { BindToolsInput } from '@langchain/core/language_models/chat_models';
 import type { AzureOptions } from './azure';
 
-export type OpenAIParameters = z.infer<typeof openAISchema>;
+export type OpenAIParameters = z.infer<typeof openAISchema> & {
+  azure_container_id?: string;
+};
 
 export type OpenAIModelOptions = Partial<OpenAIParameters>;
 

@@ -28,6 +28,11 @@ const {
 } = require('~/server/services/Files/images');
 const { addResourceFileId, deleteResourceFileId } = require('~/server/controllers/assistants/v2');
 const { getOpenAIClient } = require('~/server/controllers/assistants/helpers');
+const {
+  createAzureContainer,
+  uploadFileToAzureContainer,
+  resolveAzureCredentials,
+} = require('~/server/controllers/agents/callbacks');
 const { loadAuthValues } = require('~/server/services/Tools/credentials');
 const { getFileStrategy } = require('~/server/utils/getFileStrategy');
 const { checkCapability } = require('~/server/services/Config');
@@ -494,17 +499,31 @@ const processAgentFileUpload = async ({ req, res, metadata }) => {
     if (!isCodeEnabled) {
       throw new Error('Code execution is not enabled for Agents');
     }
-    const { handleFileUpload: uploadCodeEnvFile } = getStrategyFunctions(FileSources.execute_code);
-    const result = await loadAuthValues({ userId: req.user.id, authFields: [EnvVar.CODE_API_KEY] });
-    const stream = fs.createReadStream(file.path);
-    const fileIdentifier = await uploadCodeEnvFile({
-      req,
-      stream,
-      filename: file.originalname,
-      apiKey: result[EnvVar.CODE_API_KEY],
-      entity_id,
-    });
-    fileInfoMetadata = { fileIdentifier };
+    const azureCredentials = resolveAzureCredentials();
+    if (azureCredentials) {
+      const container_id = await createAzureContainer();
+      if (!container_id) {
+        throw new Error('Failed to create Azure container for code interpreter');
+      }
+      const stream = fs.createReadStream(file.path);
+      const azureFileId = await uploadFileToAzureContainer(container_id, stream, file.originalname);
+      if (!azureFileId) {
+        throw new Error('Failed to upload file to Azure container');
+      }
+      fileInfoMetadata = { container_id, fileIdentifier: azureFileId };
+    } else {
+      const { handleFileUpload: uploadCodeEnvFile } = getStrategyFunctions(FileSources.execute_code);
+      const result = await loadAuthValues({ userId: req.user.id, authFields: [EnvVar.CODE_API_KEY] });
+      const stream = fs.createReadStream(file.path);
+      const fileIdentifier = await uploadCodeEnvFile({
+        req,
+        stream,
+        filename: file.originalname,
+        apiKey: result[EnvVar.CODE_API_KEY],
+        entity_id,
+      });
+      fileInfoMetadata = { fileIdentifier };
+    }
   } else if (tool_resource === EToolResources.file_search) {
     const isFileSearchEnabled = await checkCapability(req, AgentCapabilities.file_search);
     if (!isFileSearchEnabled) {
