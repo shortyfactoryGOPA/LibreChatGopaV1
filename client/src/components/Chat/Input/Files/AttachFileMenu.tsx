@@ -163,7 +163,8 @@ const AttachFileMenu = ({
           label: localize('com_ui_upload_provider'),
           onClick: () => {
             setToolResource(undefined);
-            let fileType: Exclude<FileUploadType, 'image' | 'document'> = 'image_document';
+            let fileType: Exclude<FileUploadType, 'image' | 'document'> | undefined =
+              'image_document';
             if (currentProvider === Providers.GOOGLE || currentProvider === Providers.OPENROUTER) {
               fileType = 'image_document_video_audio';
             } else if (
@@ -171,6 +172,8 @@ const AttachFileMenu = ({
               endpointType === EModelEndpoint.bedrock
             ) {
               fileType = 'image_document_extended';
+            } else if (isAzureWithResponsesApi && capabilities.codeEnabled) {
+              fileType = undefined;
             }
             onAction(fileType);
           },
