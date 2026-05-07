@@ -77,13 +77,15 @@ async function createAzureContainer() {
   const { apiKey, baseURL } = credentials;
   try {
     const url = `${baseURL}/containers?api-version=preview`;
+    const name = `lc${nanoid(12).replace(/[^a-z0-9]/gi, '')}`;
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'api-key': apiKey, 'Content-Type': 'application/json' },
-      body: JSON.stringify({}),
+      body: JSON.stringify({ name }),
     });
     if (!response.ok) {
-      logger.warn(`[createAzureContainer] Azure returned ${response.status}`);
+      const body = await response.text();
+      logger.warn(`[createAzureContainer] Azure returned ${response.status}: ${body}`);
       return null;
     }
     const json = await response.json();

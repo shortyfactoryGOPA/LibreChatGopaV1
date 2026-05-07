@@ -303,6 +303,14 @@ export async function initializeAgent(
     currentFiles = (await db.updateFilesUsage(requestFiles)) as IMongoFile[];
   }
 
+  /** Extract container_id BEFORE endpoint filtering removes unsupported file types (e.g. xlsx) */
+  const azureContainerFile = requestFiles
+    .concat(currentFiles ?? [])
+    .find(
+      (f) =>
+        (f as IMongoFile & { metadata?: { container_id?: string } }).metadata?.container_id,
+    ) as (IMongoFile & { metadata?: { container_id?: string } }) | undefined;
+
   if (currentFiles && currentFiles.length) {
     let endpointType: EModelEndpoint | undefined;
     if (!paramEndpoints.has(agent.endpoint ?? '')) {
@@ -364,19 +372,11 @@ export async function initializeAgent(
     agent.provider = overrideProvider;
   }
 
-  /** Extract container_id from user-uploaded execute_code files (Azure native) */
-  const azureContainerId = requestFiles
-    .concat(currentFiles ?? [])
-    .find(
-      (f) =>
-        (f as IMongoFile & { metadata?: { container_id?: string } }).metadata?.container_id,
-    ) as (IMongoFile & { metadata?: { container_id?: string } }) | undefined;
-
   const finalModelOptions = {
     ...modelOptions,
     model: agent.model,
-    ...(azureContainerId?.metadata?.container_id
-      ? { azure_container_id: azureContainerId.metadata.container_id }
+    ...(azureContainerFile?.metadata?.container_id
+      ? { azure_container_id: azureContainerFile.metadata.container_id }
       : {}),
   };
 

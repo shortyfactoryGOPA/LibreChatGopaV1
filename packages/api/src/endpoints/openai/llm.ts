@@ -300,10 +300,13 @@ export function getOpenAILLMConfig({
   if (enableCodeInterpreter) {
     /** Native Azure/OpenAI code interpreter via Responses API */
     llmConfig.useResponsesApi = true;
-    const container = azure_container_id
-      ? { type: 'server' as const, container_id: azure_container_id as string }
-      : { type: 'auto' as const };
-    tools.push({ type: 'code_interpreter', container });
+    const toolDef: Record<string, unknown> = { type: 'code_interpreter' };
+    if (azure_container_id) {
+      toolDef.container = azure_container_id;
+    } else {
+      toolDef.container = { type: 'auto' };
+    }
+    tools.push(toolDef as BindToolsInput);
   }
 
   /**
