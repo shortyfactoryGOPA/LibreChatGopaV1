@@ -64,7 +64,11 @@ const createFileFilter = (customFileConfig) => {
       endpointType,
     });
 
-    if (!defaultFileConfig.checkType(file.mimetype, endpointFileConfig.supportedMimeTypes)) {
+    const toolResource = req.query.tool_resource || req.body.tool_resource;
+    if (
+      toolResource !== 'execute_code' &&
+      !defaultFileConfig.checkType(file.mimetype, endpointFileConfig.supportedMimeTypes)
+    ) {
       return cb(new Error('Unsupported file type: ' + file.mimetype), false);
     }
 

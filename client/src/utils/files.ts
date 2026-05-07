@@ -281,7 +281,7 @@ export const validateFiles = ({
       ];
     }
 
-    if (!checkType(originalFile.type, mimeTypesToCheck)) {
+    if (toolResource !== EToolResources.execute_code && !checkType(originalFile.type, mimeTypesToCheck)) {
       setError(`Unsupported file type: ${originalFile.type}`);
       return false;
     }

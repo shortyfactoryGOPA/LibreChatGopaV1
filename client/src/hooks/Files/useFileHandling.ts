@@ -190,6 +190,12 @@ const useFileHandlingCore = (params: UseFileHandling | undefined, fileState: Fil
     const formData = new FormData();
     formData.append('endpoint', endpoint);
     formData.append('endpointType', endpointType ?? '');
+
+    // tool_resource must precede the file binary: multer only populates req.body with fields seen before the file part
+    if (!isAssistantsEndpoint(endpointType ?? endpoint) && extendedFile.tool_resource != null) {
+      formData.append('tool_resource', extendedFile.tool_resource);
+    }
+
     formData.append('file', extendedFile.file as File, encodeURIComponent(filename));
     formData.append('file_id', extendedFile.file_id);
 
@@ -214,10 +220,6 @@ const useFileHandlingCore = (params: UseFileHandling | undefined, fileState: Fil
     if (!isAssistantsEndpoint(endpointType ?? endpoint)) {
       if (!agent_id) {
         formData.append('message_file', 'true');
-      }
-      const tool_resource = extendedFile.tool_resource;
-      if (tool_resource != null) {
-        formData.append('tool_resource', tool_resource);
       }
       if (conversation?.agent_id != null && formData.get('agent_id') == null) {
         formData.append('agent_id', conversation.agent_id);

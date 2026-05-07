@@ -396,7 +396,11 @@ export const uploadImage = (
 
 export const uploadFile = (data: FormData, signal?: AbortSignal | null): Promise<f.TFileUpload> => {
   const requestConfig = signal ? { signal } : undefined;
-  return request.postMultiPart(endpoints.files(), data, requestConfig);
+  const toolResource = data.get('tool_resource') as string | null;
+  const url = toolResource
+    ? `${endpoints.files()}?tool_resource=${encodeURIComponent(toolResource)}`
+    : endpoints.files();
+  return request.postMultiPart(url, data, requestConfig);
 };
 
 /* actions */

@@ -1,3 +1,4 @@
+import { logger } from '@librechat/data-schemas';
 import { Providers } from '@librechat/agents';
 import {
   Tools,
@@ -303,6 +304,39 @@ export async function initializeAgent(
     currentFiles = (await db.updateFilesUsage(requestFiles)) as IMongoFile[];
   }
 
+  type FileWithContainer = IMongoFile & { metadata?: { container_id?: string } };
+
+  /** Extract container_id BEFORE endpoint filtering removes unsupported file types (e.g. xlsx) */
+  let azureContainerFile = requestFiles
+    .concat(currentFiles ?? [])
+    .find((f) => (f as FileWithContainer).metadata?.container_id) as FileWithContainer | undefined;
+
+  /**
+   * Fallback: when agent.tools is empty (toolResourceSet=[]), userCodeFiles is never fetched.
+   * Search thread messages directly for any file with a container_id in its metadata.
+   */
+  if (
+    !azureContainerFile?.metadata?.container_id &&
+    conversationId &&
+    parentMessageId &&
+    parentMessageId !== Constants.NO_PARENT &&
+    db.getMessages &&
+    db.getUserCodeFiles
+  ) {
+    const allMessages = await db.getMessages({ conversationId }, 'messageId parentMessageId files');
+    if (allMessages && allMessages.length > 0) {
+      const { fileIds: threadFileIds } = getThreadData(allMessages, parentMessageId);
+      if (threadFileIds.length > 0) {
+        const threadFiles = (await db.getUserCodeFiles(threadFileIds)) as FileWithContainer[];
+        azureContainerFile = threadFiles.find((f) => f.metadata?.container_id);
+      }
+    }
+  }
+
+  logger.info(
+    `[initialize] azure_container_id=${azureContainerFile?.metadata?.container_id ?? 'none'} requestFiles=${requestFiles.length} currentFiles=${currentFiles?.length ?? 0}`,
+  );
+
   if (currentFiles && currentFiles.length) {
     let endpointType: EModelEndpoint | undefined;
     if (!paramEndpoints.has(agent.endpoint ?? '')) {
@@ -367,6 +401,9 @@ export async function initializeAgent(
   const finalModelOptions = {
     ...modelOptions,
     model: agent.model,
+    ...(azureContainerFile?.metadata?.container_id
+      ? { azure_container_id: azureContainerFile.metadata.container_id }
+      : {}),
   };
 
   const options: InitializeResultBase = await getOptions({
