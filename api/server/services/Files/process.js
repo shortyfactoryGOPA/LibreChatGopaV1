@@ -475,8 +475,6 @@ const processAgentFileUpload = async ({ req, res, metadata }) => {
   const { file } = req;
   const appConfig = req.config;
   const { agent_id, tool_resource, file_id, temp_file_id = null } = metadata;
-  logger.info(`[processAgentFileUpload] tool_resource=${tool_resource} agent_id=${agent_id} file=${file?.originalname}`);
-
   let messageAttachment = !!metadata.message_file;
 
   if (agent_id && !tool_resource && !messageAttachment) {
@@ -501,7 +499,6 @@ const processAgentFileUpload = async ({ req, res, metadata }) => {
       throw new Error('Code execution is not enabled for Agents');
     }
     const azureCredentials = resolveAzureCredentials();
-    logger.info(`[processAgentFileUpload] azureCredentials=${azureCredentials ? 'found' : 'null'}`);
     if (azureCredentials) {
       const container_id = await createAzureContainer();
       if (!container_id) {
@@ -512,7 +509,6 @@ const processAgentFileUpload = async ({ req, res, metadata }) => {
       if (!azureFileId) {
         throw new Error('Failed to upload file to Azure container');
       }
-      logger.info(`[processAgentFileUpload] Azure container=${container_id} fileId=${azureFileId}`);
       fileInfoMetadata = { container_id, fileIdentifier: azureFileId };
     } else {
       const { handleFileUpload: uploadCodeEnvFile } = getStrategyFunctions(FileSources.execute_code);
