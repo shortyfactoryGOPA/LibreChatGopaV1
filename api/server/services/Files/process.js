@@ -1041,10 +1041,10 @@ function filterFile({ req, image, isAvatar }) {
     );
   }
 
-  const isSupportedMimeType = fileConfig.checkType(
-    file.mimetype,
-    endpointFileConfig.supportedMimeTypes,
-  );
+  const toolResource = req.query.tool_resource || req.body.tool_resource;
+  const isSupportedMimeType =
+    toolResource === EToolResources.execute_code ||
+    fileConfig.checkType(file.mimetype, endpointFileConfig.supportedMimeTypes);
 
   if (!isSupportedMimeType) {
     throw new Error('Unsupported file type');
