@@ -158,12 +158,14 @@ export default function Landing({ centerFormOnLanding }: { centerFormOnLanding: 
                 size={41}
               />
             ) : (
-              <img
-                src="/assets/icon_06_half_crest.svg"
-                alt=""
-                aria-hidden="true"
-                className="size-10 overflow-hidden rounded-xl object-cover"
-              />
+              <div className="size-10 overflow-hidden rounded-xl border border-gray-200 shadow-sm dark:border-gray-700">
+                <img
+                  src="/assets/icon_06_half_crest.svg"
+                  alt=""
+                  aria-hidden="true"
+                  className="h-full w-full object-cover"
+                />
+              </div>
             )}
             {startupConfig?.showBirthdayIcon && (
               <TooltipAnchor
