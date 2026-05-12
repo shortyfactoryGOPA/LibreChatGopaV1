@@ -159,10 +159,10 @@ export default function Landing({ centerFormOnLanding }: { centerFormOnLanding: 
               />
             ) : (
               <img
-                src="/assets/gopa-chatbot-icon.png"
+                src="/assets/icon_06_half_crest.svg"
                 alt=""
                 aria-hidden="true"
-                className="size-10 object-contain"
+                className="size-10 overflow-hidden rounded-xl object-cover"
               />
             )}
             {startupConfig?.showBirthdayIcon && (
