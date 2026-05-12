@@ -100,15 +100,15 @@ function Login() {
 
   return (
     <div className="flex w-full flex-col items-center gap-4 text-gray-900 dark:text-white">
-      <div className="w-full text-center">
-        <h1 className="text-3xl font-semibold">GOPA AI Chatbot</h1>
-      </div>
-      <div className="w-full overflow-hidden rounded-md border border-gray-200 shadow-sm dark:border-gray-700">
+      <div className="h-20 w-20 overflow-hidden rounded-2xl border border-gray-200 shadow-sm dark:border-gray-700">
         <img
           src="/assets/icon_06_half_crest.svg"
           alt="GOPA AI Chatbot visual"
-          className="h-auto w-full object-contain"
+          className="h-full w-full object-cover"
         />
+      </div>
+      <div className="w-full text-center">
+        <h1 className="text-3xl font-semibold">GOPA AI Chatbot</h1>
       </div>
       <section className="w-full rounded-md border border-border-light bg-white px-5 py-4 shadow-sm dark:bg-gray-900/70">
         <div className="flex items-start gap-3">
