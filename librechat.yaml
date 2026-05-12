@@ -281,6 +281,9 @@ endpoints:
           gpt-5.4:
             deploymentName: "gpt-5.4"
 
+          gpt-5.5:
+            deploymentName: "gpt-5.5"
+
           # o3-mini:
           #   deploymentName: "o3-mini"
 
@@ -433,6 +436,20 @@ modelSpecs:
       preset:
         endpoint: "azureOpenAI"
         model: "gpt-5.4"
+        useResponsesApi: true
+        web_search: true
+        code_interpreter: true
+        temperature: 0.3
+
+    - name: "azure-gpt-5-5"
+      label: "GPT-5.5"
+      description: "Web Search + Native Code Interpreter"
+      group: "Azure OpenAI"
+      webSearch: true
+      executeCode: true
+      preset:
+        endpoint: "azureOpenAI"
+        model: "gpt-5.5"
         useResponsesApi: true
         web_search: true
         code_interpreter: true
