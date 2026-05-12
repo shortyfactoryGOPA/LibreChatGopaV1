@@ -13,7 +13,7 @@
     </linearGradient>
   </defs>
 
-  <rect width="240" height="240" fill="#F1F2F2"/>
+  <rect width="240" height="240" fill="#ffffff"/>
 
   <svg x="0" y="132" width="240" height="108" viewBox="0 0 1920 258.72" preserveAspectRatio="xMaxYMax slice">
     <path fill="url(#g-half-crest)" d="M1919.5,9.23c-225.46,8.94-454.5,83.04-670.31,142.72-320.47,90.8-661.34,114-990.17,58.03C177.53,194.25,81.12,167.11,0,148.52v110.2h1919.52l-.02-249.49Z"/>
