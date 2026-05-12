@@ -174,6 +174,13 @@ const useFileHandlingCore = (params: UseFileHandling | undefined, fileState: Fil
 
         if (error?.code === 'ERR_CANCELED') {
           errorMessage = 'com_error_files_upload_canceled';
+        } else if (error?.response?.status === 413) {
+          const endpointConfig = fileConfig
+            ? getEndpointFileConfig({ fileConfig, endpoint: endpoint as EModelEndpoint })
+            : null;
+          const sizeLimit = endpointConfig?.fileSizeLimit ?? fileConfig?.serverFileSizeLimit;
+          const limitMB = sizeLimit != null ? Math.round(sizeLimit / (1024 * 1024)) : 25;
+          errorMessage = localize('com_error_files_upload_too_large', { 0: String(limitMB) });
         } else if (error?.response?.data?.message) {
           errorMessage = error.response.data.message;
         }
