@@ -282,14 +282,16 @@ export default function AdminUsers() {
                               {localize('com_ui_admin_unban')}
                             </button>
                           )}
-                          <button
-                            type="button"
-                            disabled={actionUserId === row.id}
-                            onClick={() => handleResetPassword(row)}
-                            className="rounded-md border border-border-light px-2 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-50"
-                          >
-                            {localize('com_ui_admin_reset_password')}
-                          </button>
+                          {row.provider !== 'openid' && (
+                            <button
+                              type="button"
+                              disabled={actionUserId === row.id}
+                              onClick={() => handleResetPassword(row)}
+                              className="rounded-md border border-border-light px-2 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                              {localize('com_ui_admin_reset_password')}
+                            </button>
+                          )}
                           <button
                             type="button"
                             disabled={actionUserId === row.id}
