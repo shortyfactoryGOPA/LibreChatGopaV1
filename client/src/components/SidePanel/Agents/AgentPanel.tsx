@@ -28,6 +28,7 @@ import { useSelectAgent, useLocalize, useAuthContext } from '~/hooks';
 import { useAgentPanelContext } from '~/Providers/AgentPanelContext';
 import AgentPanelSkeleton from './AgentPanelSkeleton';
 import AdvancedPanel from './Advanced/AdvancedPanel';
+import AgentReadOnlyView from './AgentReadOnlyView';
 import { Panel, isEphemeralAgent } from '~/common';
 import AgentConfig from './AgentConfig';
 import AgentSelect from './AgentSelect';
@@ -526,16 +527,7 @@ export default function AgentPanel() {
           )}
         </div>
         {agentQuery.isInitialLoading && <AgentPanelSkeleton />}
-        {!canEditAgent && !agentQuery.isInitialLoading && (
-          <div className="flex h-[30vh] w-full items-center justify-center">
-            <div className="text-center">
-              <h2 className="m-2 text-xl font-semibold text-[#fcc200]">
-                {localize('com_agents_not_available')}
-              </h2>
-              <p className="text-token-text-secondary">{localize('com_agents_no_access')}</p>
-            </div>
-          </div>
-        )}
+        {!canEditAgent && !agentQuery.isInitialLoading && <AgentReadOnlyView />}
         {canEditAgent && !agentQuery.isInitialLoading && activePanel === Panel.model && (
           <ModelPanel models={models} providers={providers} setActivePanel={setActivePanel} />
         )}
