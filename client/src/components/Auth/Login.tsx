@@ -105,7 +105,7 @@ function Login() {
       </div>
       <div className="w-full overflow-hidden rounded-md border border-gray-200 shadow-sm dark:border-gray-700">
         <img
-          src="/assets/chatbot-ui-logo.png"
+          src="/assets/icon_06_half_crest.svg"
           alt="GOPA AI Chatbot visual"
           className="h-auto w-full object-contain"
         />
