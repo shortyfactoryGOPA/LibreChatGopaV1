@@ -453,7 +453,6 @@ modelSpecs:
         useResponsesApi: true
         web_search: true
         code_interpreter: true
-        temperature: 0.3
 
 
 # Example modelSpecs configuration showing grouping options
