@@ -138,7 +138,8 @@ const Menu: React.FC<MenuProps> = ({
               key={`${keyPrefix ?? ''}${index}-${item.id ?? ''}`}
               id={item.id}
               className={cn(
-                'group flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-3.5 text-sm text-text-primary outline-none hover:bg-surface-hover focus:bg-surface-hover md:px-2.5 md:py-2',
+                'group flex w-full cursor-pointer gap-2 rounded-lg px-3 py-3.5 text-sm text-text-primary outline-none hover:bg-surface-hover focus:bg-surface-hover md:px-2.5 md:py-2',
+                item.description != null ? 'items-start' : 'items-center',
                 itemClassName,
                 item.className,
               )}
@@ -163,11 +164,25 @@ const Menu: React.FC<MenuProps> = ({
               }}
             >
               {item.icon != null && (
-                <span className={cn('mr-2 size-4', iconClassName)} aria-hidden="true">
+                <span
+                  className={cn(
+                    'mr-2 size-4 shrink-0',
+                    item.description != null && 'mt-0.5',
+                    iconClassName,
+                  )}
+                  aria-hidden="true"
+                >
                   {item.icon}
                 </span>
               )}
-              {item.label}
+              {item.description != null ? (
+                <span className="flex flex-col gap-0.5">
+                  <span>{item.label}</span>
+                  <span className="text-xs text-text-secondary">{item.description}</span>
+                </span>
+              ) : (
+                item.label
+              )}
               {item.kbd != null && (
                 <kbd className="ml-auto hidden font-sans text-xs text-black/50 group-hover:inline group-focus:inline dark:text-white/50">
                   ⌘{item.kbd}

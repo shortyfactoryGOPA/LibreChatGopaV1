@@ -161,6 +161,7 @@ const AttachFileMenu = ({
       ) {
         items.push({
           label: localize('com_ui_upload_provider'),
+          description: localize('com_ui_upload_provider_desc'),
           onClick: () => {
             setToolResource(undefined);
             let fileType: Exclude<FileUploadType, 'image' | 'document'> | undefined =
@@ -182,6 +183,7 @@ const AttachFileMenu = ({
       } else {
         items.push({
           label: localize('com_ui_upload_image_input'),
+          description: localize('com_ui_upload_image_input_desc'),
           onClick: () => {
             setToolResource(undefined);
             onAction('image');
@@ -193,6 +195,7 @@ const AttachFileMenu = ({
       if (capabilities.contextEnabled) {
         items.push({
           label: localize('com_ui_upload_ocr_text'),
+          description: localize('com_ui_upload_ocr_text_desc'),
           onClick: () => {
             setToolResource(EToolResources.context);
             onAction();
@@ -204,6 +207,7 @@ const AttachFileMenu = ({
       if (capabilities.codeEnabled && codeAllowedByAgent) {
         items.push({
           label: localize('com_ui_upload_code_files'),
+          description: localize('com_ui_upload_code_files_desc'),
           onClick: () => {
             setToolResource(EToolResources.execute_code);
             setEphemeralAgent((prev) => ({
