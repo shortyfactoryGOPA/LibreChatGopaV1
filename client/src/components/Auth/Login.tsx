@@ -112,8 +112,8 @@ function Login() {
       </div>
       <section className="w-full rounded-md border border-border-light bg-white px-5 py-4 shadow-sm dark:bg-gray-900/70">
         <div className="flex items-start gap-3">
-          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full border border-amber-400 bg-amber-50/80 text-amber-500 shadow-[0_0_0_4px_rgba(251,191,36,0.12)] dark:border-amber-500 dark:bg-amber-500/10 dark:text-amber-300">
-            <span aria-hidden="true" className="font-serif text-3xl italic leading-none tracking-tight">
+          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-amber-400 bg-amber-50/80 text-amber-500 shadow-[0_0_0_3px_rgba(251,191,36,0.12)] dark:border-amber-500 dark:bg-amber-500/10 dark:text-amber-300">
+            <span aria-hidden="true" className="font-serif text-xl italic leading-none tracking-tight">
               i
             </span>
           </div>
