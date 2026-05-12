@@ -524,6 +524,9 @@ modelSpecs:
 #         endpoint: "openAI"
 #         model: "gpt-4o-mini"
 
+fileConfig:
+  serverFileSizeLimit: 25  # Aligned with nginx client_max_body_size
+
 # fileConfig:
 #   endpoints:
 #     assistants:
