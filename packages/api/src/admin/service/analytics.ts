@@ -62,7 +62,6 @@ export const createAdminAnalyticsUsersResponse = ({
   promptGroupCounts,
   presetCounts,
   fileCounts,
-  uploadCountMap,
 }: {
   query?: AdminAnalyticsUsersQuery;
   totalUsers: number;
@@ -73,7 +72,6 @@ export const createAdminAnalyticsUsersResponse = ({
   promptGroupCounts: AdminCountRow[];
   presetCounts: AdminCountRow[];
   fileCounts: AdminCountRow[];
-  uploadCountMap: ReadonlyMap<string, number>;
 }): AdminAnalyticsUsersResponse => {
   const limit = parseAdminLimit(query.limit);
   const page = parseAdminPage(query.page);
@@ -108,7 +106,7 @@ export const createAdminAnalyticsUsersResponse = ({
         conversations: conversationMap.get(id) ?? 0,
         ownPromptsLibrary: promptGroupMap.get(id) ?? 0,
         ownPresetsLibrary: presetMap.get(id) ?? 0,
-        uploadFiles: Math.max(fileMap.get(id) ?? 0, uploadCountMap.get(id) ?? 0),
+        uploadFiles: fileMap.get(id) ?? 0,
       };
     }),
   };

@@ -35,8 +35,6 @@ const {
   getFiles,
   getSidebarFileRetentionSettings,
   updateSidebarFileRetentionSettings,
-  getSidebarUploadCountsByUserIds,
-  syncSidebarUploadCountsFromFiles,
   searchDeepLJobs,
 } = require('~/models');
 const {
@@ -194,10 +192,6 @@ router.get('/analytics/users', async (req, res) => {
     const userIds = users.map((user) => user._id);
     const userIdStrings = users.map((user) => String(user._id));
 
-    if (userIds.length > 0) {
-      await syncSidebarUploadCountsFromFiles({ userIds });
-    }
-
     const [
       promptCounts,
       agentCounts,
@@ -205,7 +199,6 @@ router.get('/analytics/users', async (req, res) => {
       promptGroupCounts,
       presetCounts,
       fileCounts,
-      uploadCountMap,
     ] = await Promise.all([
       Prompt.aggregate([
         { $match: { author: { $in: userIds } } },
@@ -236,7 +229,6 @@ router.get('/analytics/users', async (req, res) => {
         },
         { $group: { _id: '$user', count: { $sum: 1 } } },
       ]),
-      getSidebarUploadCountsByUserIds(userIds),
     ]);
 
     const response = createAdminAnalyticsUsersResponse({
@@ -249,7 +241,6 @@ router.get('/analytics/users', async (req, res) => {
       promptGroupCounts,
       presetCounts,
       fileCounts,
-      uploadCountMap,
     });
 
     return res.status(200).json(response);
