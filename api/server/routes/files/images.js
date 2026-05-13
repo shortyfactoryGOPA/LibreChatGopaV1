@@ -9,6 +9,7 @@ const {
   processImageFile,
   filterFile,
 } = require('~/server/services/Files/process');
+const { recordSidebarFileUpload } = require('~/server/services/FileRetentionStore');
 const { checkPermission } = require('~/server/services/PermissionService');
 const db = require('~/models');
 
@@ -39,6 +40,7 @@ router.post('/', async (req, res) => {
     }
 
     await processImageFile({ req, res, metadata });
+    await recordSidebarFileUpload({ userId: req.user.id });
   } catch (error) {
     // TODO: delete remote file if it exists
     logger.error('[/files/images] Error processing file:', error);
