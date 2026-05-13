@@ -37,6 +37,7 @@ const { loadAuthValues } = require('~/server/services/Tools/credentials');
 const { getFileStrategy } = require('~/server/utils/getFileStrategy');
 const { checkCapability } = require('~/server/services/Config');
 const { LB_QueueAsyncCall } = require('~/server/utils/queue');
+const { recordSidebarFileUpload } = require('~/server/services/FileRetentionStore');
 const { getStrategyFunctions } = require('./strategies');
 const { determineFileType } = require('~/server/utils');
 const { STTService } = require('./Audio/STTService');
@@ -570,6 +571,9 @@ const processAgentFileUpload = async ({ req, res, metadata }) => {
         });
       }
       const result = await db.createFile(fileInfo, true);
+      if (messageAttachment) {
+        await recordSidebarFileUpload({ userId: req.user.id });
+      }
       return res
         .status(200)
         .json({ message: 'Agent file uploaded and processed successfully', ...result });
@@ -738,6 +742,9 @@ const processAgentFileUpload = async ({ req, res, metadata }) => {
   });
 
   const result = await db.createFile(fileInfo, true);
+  if (messageAttachment) {
+    await recordSidebarFileUpload({ userId: req.user.id });
+  }
 
   res.status(200).json({ message: 'Agent file uploaded and processed successfully', ...result });
 };
