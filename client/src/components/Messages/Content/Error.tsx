@@ -130,6 +130,10 @@ const Error = ({ text }: { text: string }) => {
   const errorMessage = text.length > 512 && !jsonString ? text.slice(0, 512) + '...' : text;
   const defaultResponse = `Something went wrong. Here's the specific error message we encountered: ${errorMessage}`;
 
+  if (text.includes('file type you uploaded is not supported')) {
+    return localize('com_error_unsupported_file_type');
+  }
+
   if (!isJson(jsonString)) {
     return defaultResponse;
   }
