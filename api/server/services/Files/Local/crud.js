@@ -240,7 +240,7 @@ const deleteLocalFile = async (req, file) => {
     return;
   }
 
-  const parts = cleanFilepath.split(path.sep);
+  const parts = cleanFilepath.split('/');
   const subfolder = parts[1];
   if (!subfolder && parts[0] === EModelEndpoint.agents) {
     logger.warn(`Agent File ${file.file_id} is missing filepath, may have been deleted already`);
