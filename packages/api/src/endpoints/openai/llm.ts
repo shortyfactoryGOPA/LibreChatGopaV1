@@ -311,11 +311,12 @@ export function getOpenAILLMConfig({
 
   /**
    * Note: OpenAI reasoning models (o1/o3/gpt-5) do not support temperature and other sampling parameters
-   * Exception: gpt-5-chat and versioned models like gpt-5.1 DO support these parameters
+   * Exception: gpt-5-chat models DO support these parameters
+   * Note: versioned gpt-5.x models (e.g. gpt-5.4) also do not support these parameters per Azure API
    */
   if (
     modelOptions.model &&
-    /\b(o[13]|gpt-5)(?!\.|-chat)(?:-|$)/.test(modelOptions.model as string)
+    /\b(o[13]|gpt-5(?:\.\d+)?)(?!-chat)(?:-|$|\b)/.test(modelOptions.model as string)
   ) {
     const reasoningExcludeParams = [
       'frequencyPenalty',
