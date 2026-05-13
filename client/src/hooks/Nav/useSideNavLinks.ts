@@ -4,9 +4,9 @@ import {
   Bot,
   Brain,
   Bookmark,
+  LayoutList,
   NotebookPen,
   ArrowRightToLine,
-  SlidersHorizontal,
 } from 'lucide-react';
 import {
   Permissions,
@@ -159,7 +159,7 @@ export default function useSideNavLinks({
       links.push({
         title: 'com_sidepanel_parameters',
         label: '',
-        icon: SlidersHorizontal,
+        icon: LayoutList,
         id: 'parameters',
         Component: Parameters,
       });
