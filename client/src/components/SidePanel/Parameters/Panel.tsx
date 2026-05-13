@@ -10,13 +10,16 @@ import {
   SettingDefinition,
   tConvoUpdateSchema,
 } from 'librechat-data-provider';
+import { useCreatePresetMutation } from 'librechat-data-provider/react-query';
+import { useToastContext } from '@librechat/client';
 import type { TPreset } from 'librechat-data-provider';
+import { NotificationSeverity } from '~/common';
 import { SaveAsPresetDialog } from '~/components/Endpoints';
 import { useSetIndexOptions, useLocalize } from '~/hooks';
-import { useGetEndpointsQuery, useGetPresetsQuery } from '~/data-provider';
+import { useGetEndpointsQuery, useGetPresetsQuery, useUpdatePresetMutation } from '~/data-provider';
 import { componentMapping } from './components';
 import { useChatContext } from '~/Providers';
-import { logger } from '~/utils';
+import { cleanupPreset, logger } from '~/utils';
 import store from '~/store';
 
 export default function Parameters() {
@@ -27,6 +30,9 @@ export default function Parameters() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [preset, setPreset] = useState<TPreset | null>(null);
   const activePresetId = useRecoilValue(store.activePresetId);
+  const createPresetMutation = useCreatePresetMutation();
+  const updatePresetMutation = useUpdatePresetMutation();
+  const { showToast } = useToastContext();
 
   const { data: endpointsConfig = {} } = useGetEndpointsQuery();
   const { data: presets = [] } = useGetPresetsQuery();
@@ -144,9 +150,41 @@ export default function Parameters() {
         newPreset.title = activePreset.title;
       }
     }
+
+    const modelLabelInput = document.getElementById(
+      'modelLabel-dynamic-input',
+    ) as HTMLInputElement | null;
+    const chatGptLabel =
+      modelLabelInput?.value?.trim() || (conversation?.modelLabel ?? conversation?.chatGptLabel ?? '');
+    if (chatGptLabel) {
+      newPreset.title = chatGptLabel;
+      const _preset = cleanupPreset({ preset: newPreset });
+      const toastTitle = `\`${_preset.title}\``;
+      const onSuccess = () => showToast({ message: `${toastTitle} ${localize('com_ui_saved')}` });
+      const onError = () =>
+        showToast({
+          message: localize('com_endpoint_preset_save_error'),
+          severity: NotificationSeverity.ERROR,
+        });
+      if (activePresetId) {
+        updatePresetMutation.mutate({ ..._preset, presetId: activePresetId }, { onSuccess, onError });
+      } else {
+        createPresetMutation.mutate(_preset, { onSuccess, onError });
+      }
+      return;
+    }
+
     setPreset(newPreset);
     setIsDialogOpen(true);
-  }, [conversation, activePresetId, presets]);
+  }, [
+    conversation,
+    activePresetId,
+    presets,
+    createPresetMutation,
+    updatePresetMutation,
+    showToast,
+    localize,
+  ]);
 
   if (!parameters) {
     return null;
