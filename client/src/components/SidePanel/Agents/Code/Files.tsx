@@ -95,6 +95,11 @@ function Files({
             </div>
           </button>
         </div>
+        {agent_id ? null : (
+          <div className="text-xs text-text-secondary">
+            {localize('com_agents_code_interpreter_disabled')}
+          </div>
+        )}
       </div>
     </div>
   );

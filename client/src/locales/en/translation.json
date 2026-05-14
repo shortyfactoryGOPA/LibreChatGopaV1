@@ -88,6 +88,7 @@
   "com_agents_error_timeout_title": "Connection Timeout",
   "com_agents_error_title": "Something went wrong",
   "com_agents_file_context_description": "Files uploaded as \"Context\" are parsed as text to supplement the Agent's instructions. If OCR is available, or if configured for the uploaded filetype, the process is used to extract text. Ideal for documents, images with text, or PDFs where you need the full text content of a file",
+  "com_agents_code_interpreter_disabled": "Agent must be created before uploading files for Code Interpreter.",
   "com_agents_file_context_disabled": "Agent must be created before uploading files for File Context.",
   "com_agents_file_context_label": "File Context",
   "com_agents_file_search_disabled": "Agent must be created before uploading files for File Search.",
