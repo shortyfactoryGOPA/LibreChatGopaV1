@@ -6,7 +6,6 @@ import {
   HoverCard,
   DropdownPopup,
   AttachmentIcon,
-  CircleHelpIcon,
   SharePointIcon,
   HoverCardPortal,
   HoverCardContent,
@@ -116,7 +115,6 @@ function FileContext({
               <label className="text-token-text-primary block text-sm font-medium">
                 {localize('com_agents_file_context_label')}
               </label>
-              <CircleHelpIcon className="h-4 w-4 text-text-tertiary" />
             </span>
           </HoverCardTrigger>
           <HoverCardPortal>
