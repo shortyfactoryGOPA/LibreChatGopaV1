@@ -3,9 +3,14 @@ import { Folder } from 'lucide-react';
 import * as Ariakit from '@ariakit/react';
 import { EModelEndpoint, EToolResources } from 'librechat-data-provider';
 import {
+  HoverCard,
   DropdownPopup,
   AttachmentIcon,
+  CircleHelpIcon,
   SharePointIcon,
+  HoverCardPortal,
+  HoverCardContent,
+  HoverCardTrigger,
 } from '@librechat/client';
 import type { ExtendedFile } from '~/common';
 import { useSharePointFileHandlingNoChatContext } from '~/hooks/Files/useSharePointFileHandling';
@@ -14,7 +19,7 @@ import { useAgentFileConfig, useLocalize, useLazyEffect } from '~/hooks';
 import { SharePointPickerDialog } from '~/components/SharePoint';
 import FileRow from '~/components/Chat/Input/Files/FileRow';
 import { useGetStartupConfig } from '~/data-provider';
-import { isEphemeralAgent } from '~/common';
+import { ESide, isEphemeralAgent } from '~/common';
 
 function FileContext({
   agent_id,
@@ -104,11 +109,27 @@ function FileContext({
   );
   return (
     <div className="w-full">
-      <div className="mb-2">
-        <label className="text-token-text-primary block text-sm font-medium">
-          {localize('com_agents_file_context_label')}
-        </label>
-      </div>
+      <HoverCard openDelay={50}>
+        <div className="mb-2 flex items-center gap-2">
+          <HoverCardTrigger asChild>
+            <span className="flex items-center gap-2">
+              <label className="text-token-text-primary block text-sm font-medium">
+                {localize('com_agents_file_context_label')}
+              </label>
+              <CircleHelpIcon className="h-4 w-4 text-text-tertiary" />
+            </span>
+          </HoverCardTrigger>
+          <HoverCardPortal>
+            <HoverCardContent side={ESide.Top} className="w-80">
+              <div className="space-y-2">
+                <p className="text-sm text-text-secondary">
+                  {localize('com_agents_file_context_description')}
+                </p>
+              </div>
+            </HoverCardContent>
+          </HoverCardPortal>
+        </div>
+      </HoverCard>
       <div className="flex flex-col gap-3">
         {/* File Context Files */}
         <FileRow
