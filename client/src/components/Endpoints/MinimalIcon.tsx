@@ -1,4 +1,4 @@
-import { Feather } from 'lucide-react';
+import { Bot } from 'lucide-react';
 import {
   EModelEndpoint,
   alternateName,
@@ -52,7 +52,7 @@ const MinimalIcon: React.FC<IconProps> = (props) => {
     [AzureAssistantsOldEndpoint]: { icon: <Sparkles className="icon-sm text-violet-500" />, name: 'Azure Assistants' },
     [AzureNewFoundryAssistantsEndpoint]: { icon: <Sparkles className="icon-sm text-[#fcc200]" />, name: 'Azure AI Foundry NEW' },
     [EModelEndpoint.agents]: {
-      icon: <Feather className="icon-sm" aria-hidden="true" />,
+      icon: <Bot className="icon-sm" aria-hidden="true" />,
       name: props.modelLabel ?? alternateName[EModelEndpoint.agents],
     },
     [EModelEndpoint.bedrock]: {
