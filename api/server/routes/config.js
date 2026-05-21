@@ -132,14 +132,8 @@ router.get('/', async function (req, res) {
       };
 
       const interfaceConfig = baseConfig?.interfaceConfig;
-      if (interfaceConfig?.privacyPolicy || interfaceConfig?.termsOfService) {
-        payload.interface = {};
-        if (interfaceConfig.privacyPolicy) {
-          payload.interface.privacyPolicy = interfaceConfig.privacyPolicy;
-        }
-        if (interfaceConfig.termsOfService) {
-          payload.interface.termsOfService = interfaceConfig.termsOfService;
-        }
+      if (interfaceConfig?.privacyPolicy) {
+        payload.interface = { privacyPolicy: interfaceConfig.privacyPolicy };
       }
 
       return res.status(200).send(payload);
