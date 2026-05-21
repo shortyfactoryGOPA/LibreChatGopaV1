@@ -73,7 +73,6 @@ function buildSharedPayload() {
       isBirthday() ||
       isEnabled(process.env.SHOW_BIRTHDAY_ICON) ||
       process.env.SHOW_BIRTHDAY_ICON === '',
-    helpAndFaqURL: process.env.HELP_AND_FAQ_URL || 'https://librechat.ai',
     sharedLinksEnabled,
     publicSharedLinksEnabled,
     analyticsGtmId: process.env.ANALYTICS_GTM_ID,
@@ -131,11 +130,6 @@ router.get('/', async function (req, res) {
         turnstile: baseConfig?.turnstileConfig,
       };
 
-      const interfaceConfig = baseConfig?.interfaceConfig;
-      if (interfaceConfig?.privacyPolicy) {
-        payload.interface = { privacyPolicy: interfaceConfig.privacyPolicy };
-      }
-
       return res.status(200).send(payload);
     }
 
@@ -150,6 +144,7 @@ router.get('/', async function (req, res) {
     /** @type {TStartupConfig} */
     const payload = {
       ...sharedPayload,
+      helpAndFaqURL: process.env.HELP_AND_FAQ_URL || 'https://librechat.ai',
       socialLogins: appConfig?.registration?.socialLogins ?? defaultSocialLogins,
       interface: appConfig?.interfaceConfig,
       turnstile: appConfig?.turnstileConfig,
