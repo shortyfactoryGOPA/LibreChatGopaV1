@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 type TSocialButtonProps = {
   id: string;
@@ -19,11 +19,13 @@ const SocialButton = ({
   label,
   disabled = false,
 }: TSocialButtonProps) => {
+  const [clicked, setClicked] = useState(false);
+
   if (!enabled && !disabled) {
     return null;
   }
 
-  const isDisabled = Boolean(disabled);
+  const isDisabled = Boolean(disabled) || clicked;
   const buttonClasses = [
     'flex w-full items-center space-x-3 rounded-2xl border border-border-light bg-surface-primary px-5 py-3 text-text-primary',
     isDisabled
@@ -50,6 +52,7 @@ const SocialButton = ({
           className={buttonClasses}
           href={`${serverDomain}/oauth/${oauthPath}`}
           data-testid={id}
+          onClick={() => setClicked(true)}
         >
           <Icon />
           <p>{label}</p>

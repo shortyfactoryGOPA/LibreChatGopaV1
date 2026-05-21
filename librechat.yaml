@@ -453,7 +453,8 @@ modelSpecs:
         useResponsesApi: true
         web_search: true
         code_interpreter: true
-
+        reasoning_effort: "low"
+        reasoning_summary: "auto"
 
 # Example modelSpecs configuration showing grouping options
 # The 'group' field organizes model specs in the UI selector:
