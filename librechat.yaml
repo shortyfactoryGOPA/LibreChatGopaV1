@@ -444,6 +444,7 @@ modelSpecs:
     - name: "azure-gpt-5-5"
       label: "GPT-5.5"
       description: "Web Search + Native Code Interpreter"
+      default: true
       group: "Azure OpenAI"
       webSearch: true
       executeCode: true
