@@ -1,16 +1,14 @@
 import React, { useState, useCallback } from 'react';
 import * as Ariakit from '@ariakit/react';
-import { Globe, Settings2, TerminalSquareIcon } from 'lucide-react';
+import { Globe, Brain, Settings2, TerminalSquareIcon } from 'lucide-react';
 import { TooltipAnchor, DropdownPopup, PinIcon } from '@librechat/client';
+import { ReasoningEffort, Permissions, PermissionTypes } from 'librechat-data-provider';
 import type { MenuItemProps } from '~/common';
-import {
-  Permissions,
-  PermissionTypes,
-} from 'librechat-data-provider';
-import { useLocalize, useHasAccess } from '~/hooks';
+import { useLocalize, useHasAccess, useSetIndexOptions } from '~/hooks';
 import MCPSubMenu from '~/components/Chat/Input/MCPSubMenu';
 import { useGetStartupConfig } from '~/data-provider';
 import { useBadgeRowContext } from '~/Providers';
+import { useChatContext } from '~/Providers';
 import { cn } from '~/utils';
 
 interface ToolsDropdownProps {
@@ -21,6 +19,8 @@ const ToolsDropdown = ({ disabled }: ToolsDropdownProps) => {
   const localize = useLocalize();
   const context = useBadgeRowContext();
   const { data: startupConfig } = useGetStartupConfig();
+  const { conversation } = useChatContext();
+  const { setOption } = useSetIndexOptions();
 
   const canUseWebSearch = useHasAccess({
     permissionType: PermissionTypes.WEB_SEARCH,
@@ -48,6 +48,9 @@ const ToolsDropdown = ({ disabled }: ToolsDropdownProps) => {
   }, [codeInterpreter]);
 
   const mcpPlaceholder = startupConfig?.interface?.mcpServers?.placeholder;
+
+  const useResponsesApi = conversation?.useResponsesApi ?? false;
+  const currentEffort = (conversation?.reasoning_effort ?? ReasoningEffort.medium) as ReasoningEffort;
 
   const dropdownItems: MenuItemProps[] = [];
 
@@ -120,6 +123,38 @@ const ToolsDropdown = ({ disabled }: ToolsDropdownProps) => {
     dropdownItems.push({
       hideOnClick: false,
       render: (props) => <MCPSubMenu {...props} placeholder={mcpPlaceholder} />,
+    });
+  }
+
+  if (useResponsesApi && conversation?.model === 'gpt-5.5') {
+    if (dropdownItems.length > 0) {
+      dropdownItems.push({ separate: true } as MenuItemProps);
+    }
+    dropdownItems.push({
+      id: 'reasoning-effort',
+      label: localize('com_endpoint_reasoning_effort'),
+      icon: <Brain className="icon-md" aria-hidden="true" />,
+      hideOnClick: false,
+      subItems: [
+        {
+          id: 'reasoning-effort-low',
+          label: localize('com_ui_low'),
+          ariaChecked: currentEffort === ReasoningEffort.low,
+          onClick: () => setOption('reasoning_effort')(ReasoningEffort.low),
+        },
+        {
+          id: 'reasoning-effort-medium',
+          label: localize('com_ui_medium'),
+          ariaChecked: currentEffort === ReasoningEffort.medium || currentEffort === ('' as ReasoningEffort),
+          onClick: () => setOption('reasoning_effort')(ReasoningEffort.medium),
+        },
+        {
+          id: 'reasoning-effort-high',
+          label: localize('com_ui_high'),
+          ariaChecked: currentEffort === ReasoningEffort.high,
+          onClick: () => setOption('reasoning_effort')(ReasoningEffort.high),
+        },
+      ],
     });
   }
 

@@ -1,5 +1,6 @@
 import React from 'react';
 import * as Ariakit from '@ariakit/react';
+import { Check } from 'lucide-react';
 import type * as t from '~/common';
 import { cn } from '~/utils';
 import './Dropdown.css';
@@ -182,6 +183,9 @@ const Menu: React.FC<MenuProps> = ({
                 </span>
               ) : (
                 item.label
+              )}
+              {item.ariaChecked === true && (
+                <Check className="ml-auto h-4 w-4 shrink-0" aria-hidden="true" />
               )}
               {item.kbd != null && (
                 <kbd className="ml-auto hidden font-sans text-xs text-black/50 group-hover:inline group-focus:inline dark:text-white/50">
