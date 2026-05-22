@@ -96,9 +96,6 @@ endpoints:
         version: "2025-01-01-preview"                   # version API Azure
         assistants: true
         models:
-          gpt-5.2:
-            deploymentName: "gpt-5.2"
-
           gpt-5.4:
             deploymentName: "gpt-5.4"
 
@@ -113,21 +110,6 @@ endpoints:
 modelSpecs:
   enforce: true
   list:
-    - name: "azure-gpt-5-2"
-      label: "GPT-5.2"
-      description: "Web Search + Native Code Interpreter"
-      group: "Azure OpenAI"
-      groupIcon: "azureOpenAI"
-      webSearch: true
-      executeCode: true
-      preset:
-        endpoint: "azureOpenAI"
-        model: "gpt-5.2"
-        useResponsesApi: true
-        web_search: true
-        code_interpreter: true
-        temperature: 0.3
-
     - name: "azure-gpt-5-4"
       label: "GPT-5.4"
       description: "Web Search + Native Code Interpreter"
