@@ -61,6 +61,7 @@
   "com_agents_error_timeout_title": "Délai de connexion dépassé",
   "com_agents_error_title": "Une erreur est survenue",
   "com_agents_file_context_description": "Les fichiers uploadés comme \"Contexte\" sont traités en tant que texte pour compléter les instructions de l'agent. Si l'OCR est configuré pour le type de fichier uploadé, il est utilisé pour extraire le texte. Parfait pour les documents, les images avec du texte ou les PDF où vous avez besoin du contenu textuel complet d'un fichier.",
+  "com_agents_code_interpreter_disabled": "L'agent doit être créé avant de télécharger des fichiers pour l'Interpréteur de Code.",
   "com_agents_file_context_disabled": "L'agent doit être créé avant de charger des fichiers pour le contexte de fichiers.",
   "com_agents_file_context_label": "Contexte de fichiers",
   "com_agents_file_search_disabled": "L'agent doit être créé avant de pouvoir télécharger des fichiers pour la Recherche de Fichiers.",
